@@ -121,8 +121,7 @@ const DOWS = ['日','一','二','三','四','五','六'];
 
 const START = new Date(2026, 6, 4);
 const END = new Date(2026, 6, 25);
-const TODAY = new Date(2026, 6, 25);
-// const TODAY = new Date();
+const TODAY = new Date();
 
 const DAYS = [];
 for (let d = new Date(START); d <= END; d.setDate(d.getDate() + 1)) {
@@ -133,11 +132,31 @@ for (let d = new Date(START); d <= END; d.setDate(d.getDate() + 1)) {
   });
 }
 
-function isLocked(d) { return d > TODAY; }
+function isLocked(d) {
+  if (d > TODAY) return true;
+  if (d.toDateString() === TODAY.toDateString()) {
+    // 当天早上9点后才解锁
+    if (TODAY.getHours() < 9) return true;
+  }
+  return false;
+}
 function isToday(d) { return d.toDateString() === TODAY.toDateString(); }
 
 function imgError(el) {
-  if (el.tagName === 'IMG') el.style.display = 'none';
+  // 隐藏整个 stock-card
+  const card = el.closest('.stock-card');
+  if (card) card.style.display = 'none';
+}
+
+function hideEmptySection() {
+  // 如果周K区所有卡片都隐藏了，连标题一起隐藏
+  const wkCards = document.querySelectorAll('#weekKLine .stock-card');
+  if (wkCards.length > 0) {
+    const allHidden = Array.from(wkCards).every(c => c.style.display === 'none');
+    if (allHidden) {
+      document.getElementById('weekKLine').style.display = 'none';
+    }
+  }
 }
 
 function render() {
@@ -222,18 +241,35 @@ function render() {
     }
     html += '</div>';
 
-    // 周K（直接渲染，加载失败的图自动隐藏）
-    html += '<div class="section-label">📊 周K线</div><div class="stock-grid">';
+    // 周K（有图才显示）
+    html += '<div id="weekKLine"><div class="section-label">📊 周K线</div><div class="stock-grid">';
     for (const stock of STOCKS) {
-      html += `<div class="stock-card">
+      html += `<div class="stock-card" style="display:none">
         <h3>${stock} 周K</h3>
         <img src="${base}${stock}_周K.png" alt="${stock} 周K"
-             loading="lazy" onclick="preview(this.src)" onerror="imgError(this)">
+              onclick="preview(this.src)" onload="this.closest('.stock-card').style.display='block'" onerror="imgError(this)">
       </div>`;
     }
-    html += '</div>';
+    html += '</div></div>';
 
     area.innerHTML = html;
+    const wkImgs = document.querySelectorAll('#weekKLine img');
+    let wkDone = 0;
+    if (wkImgs.length === 0) return;
+    wkImgs.forEach(img => {
+      if (img.complete) {
+        if (img.naturalWidth > 0) img.closest('.stock-card').style.display = 'block';
+        wkDone++; if (wkDone === wkImgs.length) hideEmptySection();
+      } else {
+        img.onload = function() {
+          img.closest('.stock-card').style.display = 'block';
+          wkDone++; if (wkDone === wkImgs.length) hideEmptySection();
+        };
+        img.onerror = function() {
+          wkDone++; if (wkDone === wkImgs.length) hideEmptySection();
+        };
+      }
+    });
   }
 
   renderCalendar();
