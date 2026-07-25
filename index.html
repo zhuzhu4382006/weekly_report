@@ -12,13 +12,13 @@ body {
 }
 h1 { text-align: center; font-size: 26px; margin-bottom: 4px; }
 .subtitle { text-align: center; color: #64748b; font-size: 14px; margin-bottom: 36px; }
-.card {
+.card-link {
   background: #fff; border-radius: 12px; padding: 20px 24px; margin-bottom: 16px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: box-shadow 0.2s;
   display: flex; justify-content: space-between; align-items: center;
   text-decoration: none; color: inherit; border: 1px solid #e2e8f0;
 }
-.card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); border-color: #2563eb; }
+.card-link:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); border-color: #2563eb; }
 .card-left { display: flex; align-items: center; gap: 14px; }
 .card-rank { font-size: 28px; }
 .card-info h2 { margin: 0; font-size: 17px; font-weight: 600; }
@@ -37,6 +37,25 @@ h1 { text-align: center; font-size: 26px; margin-bottom: 4px; }
   font-size: 13px; color: #64748b; line-height: 1.7;
 }
 .note strong { color: #1e293b; }
+
+/* ===== 持仓分布 ===== */
+.pos-card {
+  background: #fff; border-radius: 12px; padding: 18px 20px; margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;
+}
+.pos-title {
+  font-size: 15px; font-weight: 600; margin-bottom: 12px; text-align: center;
+}
+.pos-grid {
+  display: grid; grid-template-columns: 56px repeat(3, 1fr); gap: 2px;
+  font-size: 13px; max-width: 340px; margin: 0 auto;
+}
+.pos-grid .ph { font-weight: 600; color: #64748b; font-size: 11px; text-align: center; padding: 4px 0; }
+.pos-grid .pn { font-weight: 600; font-size: 13px; padding: 4px 4px; white-space: nowrap; }
+.pos-grid .pc { text-align: center; padding: 4px 0; font-size: 16px; }
+.pos-yes { color: #16a34a; font-weight: 700; }
+.pos-no { color: #cbd5e1; }
+.pos-update { font-size: 11px; color: #94a3b8; text-align: center; margin-top: 8px; }
 </style>
 </head>
 <body>
@@ -44,7 +63,7 @@ h1 { text-align: center; font-size: 26px; margin-bottom: 4px; }
 <h1>📈 模拟炒股 · 周报</h1>
 <p class="subtitle">每周分析报告 · 点击查看详情</p>
 
-<a class="card" href="分析报告_第一周.html">
+<a class="card-link" href="分析报告_第一周.html">
   <div class="card-left">
     <div class="card-rank">🥇</div>
     <div class="card-info">
@@ -55,7 +74,7 @@ h1 { text-align: center; font-size: 26px; margin-bottom: 4px; }
   <div class="card-arrow">→</div>
 </a>
 
-<a class="card" href="分析报告_第二周.html">
+<a class="card-link" href="分析报告_第二周.html">
   <div class="card-left">
     <div class="card-rank">🥇</div>
     <div class="card-info">
@@ -66,7 +85,7 @@ h1 { text-align: center; font-size: 26px; margin-bottom: 4px; }
   <div class="card-arrow">→</div>
 </a>
 
-<a class="card" href="分析报告_第三周.html">
+<a class="card-link" href="分析报告_第三周.html">
   <div class="card-left">
     <div class="card-rank">🥇</div>
     <div class="card-info">
@@ -77,13 +96,68 @@ h1 { text-align: center; font-size: 26px; margin-bottom: 4px; }
   <div class="card-arrow">→</div>
 </a>
 
+<a class="card-link" href="hangqing.html" style="border-color:#dbeafe;background:#f8faff;">
+  <div class="card-left">
+    <div class="card-rank">📊</div>
+    <div class="card-info">
+      <h2>每日行情 <span style="display:inline-block;font-size:11px;padding:1px 8px;border-radius:4px;margin-left:8px;font-weight:500;background:#dbeafe;color:#2563eb;">自动解锁</span></h2>
+      <p>三支股票每日K线 · 未来日期自动锁定</p>
+    </div>
+  </div>
+  <div class="card-arrow">→</div>
+</a>
+
+<div class="pos-card" id="posCard">
+  <div class="pos-title">📌 持仓分布 <span style="font-weight:400;font-size:12px;color:#64748b;">（截至 7/25）</span></div>
+  <div id="posBody"></div>
+  <div class="pos-update">✓ 持有 &nbsp;·&nbsp; — 未持仓 &nbsp;·&nbsp; 下次更新：推进游戏后修改下方数据</div>
+</div>
+
 <hr class="divider">
 
 <div class="note">
   <strong>💡 说明</strong><br>
-  每周六更新。排名仅显示前三名，具体金额和仓位游戏结束才揭晓。
+  每周六更新。排名仅显示前三名，具体金额和仓位游戏结束才揭晓。<br>
   点击任意周报可查看该周的行情回顾、选手操作分析和心理观察。
 </div>
+
+<script>
+// ⚡ 推进游戏后，修改这里的数据即可更新持仓分布
+const POS_DATA = {
+  date: '7月25日',
+  players: [
+    { name: '受受', A: false, B: true,  C: false },
+    { name: '小玉', A: false, B: true,  C: false },
+    { name: '蟹蟹', A: true,  B: true,  C: true  },
+    { name: '飞鸟', A: true,  B: false, C: true  },
+    { name: '鹅蛋', A: false, B: false, C: false }
+  ]
+};
+
+const STOCK_NAMES = ['天枢能源', '玉衡材料', '摇光电子'];
+const STOCK_IDS = ['A', 'B', 'C'];
+
+function renderPos() {
+  const body = document.getElementById('posBody');
+  let html = '<div class="pos-grid">';
+  // Header
+  html += '<div class="ph"></div>';
+  for (const name of STOCK_NAMES) {
+    html += `<div class="ph">${name}</div>`;
+  }
+  // Players
+  for (const p of POS_DATA.players) {
+    html += `<div class="pn">${p.name}</div>`;
+    for (const sid of STOCK_IDS) {
+      const has = p[sid];
+      html += `<div class="pc">${has ? '<span class="pos-yes">✓</span>' : '<span class="pos-no">—</span>'}</div>`;
+    }
+  }
+  html += '</div>';
+  body.innerHTML = html;
+}
+renderPos();
+</script>
 
 </body>
 </html>

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>每日行情 · 模拟炒股</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #f0f2f5; color: #1e293b; line-height: 1.6; padding: 12px;
+  max-width: 900px; margin: 0 auto;
+}
+h1 { text-align: center; font-size: 20px; margin: 8px 0 2px; }
+.subtitle { text-align: center; color: #64748b; font-size: 12px; margin-bottom: 10px; }
+
+/* ===== 紧凑日历 ===== */
+.calendar {
+  background: #fff; border-radius: 10px; padding: 10px 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06); margin-bottom: 12px;
+  max-width: 480px; margin-left: auto; margin-right: auto;
+}
+.cal-header {
+  text-align: center; font-size: 14px; font-weight: 600; margin-bottom: 6px;
+}
+.cal-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
+}
+.cal-weekday {
+  text-align: center; font-size: 10px; color: #94a3b8; padding: 2px 0;
+  font-weight: 500;
+}
+.cal-cell {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500;
+  transition: all 0.12s; border: 1px solid transparent;
+  user-select: none; padding: 3px 0;
+}
+.cal-cell:hover:not(.empty):not(.locked) { background: #eff6ff; }
+.cal-cell.active { background: #2563eb; color: #fff; }
+.cal-cell.locked { opacity: 0.3; cursor: not-allowed; }
+.cal-cell.empty { cursor: default; }
+.cal-cell .day-num { line-height: 1.3; }
+.cal-cell .day-dot { width: 4px; height: 4px; border-radius: 50%; }
+.cal-cell .day-dot.has-img { background: #2563eb; }
+.cal-cell.active .day-dot.has-img { background: #fff; }
+.cal-today { position: relative; }
+.cal-today::after {
+  content: '今'; position: absolute; top: -4px; right: -4px;
+  background: #dc2626; color: #fff; font-size: 8px; padding: 0 3px;
+  border-radius: 3px; font-weight: 700; line-height: 1.4;
+}
+
+/* ===== 日期标题 ===== */
+.date-title {
+  font-size: 15px; font-weight: 600; text-align: center; margin-bottom: 10px;
+}
+.date-title .dow { color: #64748b; font-weight: 400; }
+
+/* ===== K线 ===== */
+.stock-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
+}
+.stock-card {
+  background: #fff; border-radius: 8px; overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.stock-card h3 {
+  font-size: 12px; padding: 6px 10px; background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0; font-weight: 600;
+}
+.stock-card img { width: 100%; display: block; cursor: pointer; }
+.section-label {
+  font-size: 12px; color: #64748b; margin: 14px 0 6px; font-weight: 500;
+}
+
+/* ===== 锁定遮罩 ===== */
+.lock-overlay {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 50px 20px; text-align: center;
+  color: #94a3b8;
+}
+.lock-overlay .lock-icon { font-size: 40px; margin-bottom: 10px; }
+.lock-overlay p { font-size: 14px; }
+
+/* ===== 全屏预览 ===== */
+.preview-overlay {
+  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.85); z-index: 999; cursor: zoom-out;
+  justify-content: center; align-items: center;
+}
+.preview-overlay.active { display: flex; }
+.preview-overlay img { max-width: 95%; max-height: 95%; border-radius: 4px; }
+
+footer { text-align: center; color: #94a3b8; font-size: 11px; margin-top: 20px; padding-bottom: 16px; }
+
+@media (max-width: 600px) {
+  .stock-grid { grid-template-columns: 1fr; }
+  .calendar { max-width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<h1>📈 每日行情</h1>
+<p class="subtitle">点击日期查看 · 未来日期锁定</p>
+
+<div id="calendar" class="calendar"></div>
+<div id="dateTitle" class="date-title"></div>
+<div id="contentArea"></div>
+
+<div class="preview-overlay" id="preview" onclick="this.classList.remove('active')">
+  <img id="previewImg" src="" alt="预览">
+</div>
+
+<footer>未来日期随游戏推进自动解锁</footer>
+
+<script>
+const STOCKS = ['天枢能源', '玉衡材料', '摇光电子'];
+const DOWS = ['日','一','二','三','四','五','六'];
+
+const START = new Date(2026, 6, 4);
+const END = new Date(2026, 6, 25);
+const TODAY = new Date(2026, 6, 25);
+// const TODAY = new Date();
+
+const DAYS = [];
+for (let d = new Date(START); d <= END; d.setDate(d.getDate() + 1)) {
+  DAYS.push({
+    date: new Date(d),
+    mmdd: `${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`,
+    dow: DOWS[d.getDay()]
+  });
+}
+
+function isLocked(d) { return d > TODAY; }
+function isToday(d) { return d.toDateString() === TODAY.toDateString(); }
+
+function imgError(el) {
+  if (el.tagName === 'IMG') el.style.display = 'none';
+}
+
+function render() {
+  let selectedIdx = DAYS.length - 1;
+  for (let i = DAYS.length - 1; i >= 0; i--) {
+    if (!isLocked(DAYS[i].date)) { selectedIdx = i; break; }
+  }
+
+  function renderCalendar() {
+    const firstDay = new Date(2026, 6, 1);
+    const startPad = firstDay.getDay();
+    const daysInMonth = new Date(2026, 7, 0).getDate();
+
+    let html = `<div class="cal-header">2026年7月</div>
+      <div class="cal-grid">
+        ${['日','一','二','三','四','五','六'].map(d => `<div class="cal-weekday">${d}</div>`).join('')}`;
+
+    for (let i = 0; i < startPad; i++) html += '<div class="cal-cell empty"></div>';
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const d = new Date(2026, 6, day);
+      const mmdd = `07-${String(day).padStart(2,'0')}`;
+      const isGameDay = DAYS.some(dd => dd.mmdd === mmdd);
+      const locked = isLocked(d);
+      const today = isToday(d);
+      const isActive = DAYS[selectedIdx] && DAYS[selectedIdx].mmdd === mmdd;
+
+      let cls = 'cal-cell';
+      if (!isGameDay) cls += ' empty';
+      else if (locked) cls += ' locked';
+      if (isActive) cls += ' active';
+      if (today && !locked) cls += ' cal-today';
+
+      const onclick = isGameDay && !locked ? `selectDay('${mmdd}')` : '';
+
+      html += `<div class="${cls}" ${onclick ? `onclick="${onclick}"` : ''}>
+        <span class="day-num">${day}</span>
+        ${isGameDay ? '<span class="day-dot has-img"></span>' : ''}
+      </div>`;
+    }
+
+    html += '</div></div>';
+    document.getElementById('calendar').innerHTML = html;
+  }
+
+  window.selectDay = function(mmdd) {
+    const idx = DAYS.findIndex(d => d.mmdd === mmdd);
+    if (idx === -1) return;
+    selectedIdx = idx;
+    renderCalendar();
+    renderContent();
+  };
+
+  function renderContent() {
+    const d = DAYS[selectedIdx];
+    const title = document.getElementById('dateTitle');
+    const area = document.getElementById('contentArea');
+    const locked = isLocked(d.date);
+
+    title.innerHTML = `7月${d.date.getDate()}日 <span class="dow">${d.dow}</span>`;
+
+    if (locked) {
+      const diff = Math.ceil((d.date - TODAY) / (1000*60*60*24));
+      area.innerHTML = `<div class="lock-overlay">
+        <div class="lock-icon">🔒</div>
+        <p>7月${d.date.getDate()}日（${d.dow}）尚未解锁</p>
+        <p style="font-size:13px;margin-top:4px;color:#cbd5e1;">还有 ${diff} 天解锁</p>
+      </div>`;
+      return;
+    }
+
+    const base = `K线行情/${d.mmdd}/`;
+
+    // 日K
+    let html = '<div class="section-label">📊 日K线</div><div class="stock-grid">';
+    for (const stock of STOCKS) {
+      html += `<div class="stock-card">
+        <h3>${stock}</h3>
+        <img src="${base}${stock}.png" alt="${stock}"
+             loading="lazy" onclick="preview(this.src)" onerror="imgError(this)">
+      </div>`;
+    }
+    html += '</div>';
+
+    // 周K（直接渲染，加载失败的图自动隐藏）
+    html += '<div class="section-label">📊 周K线</div><div class="stock-grid">';
+    for (const stock of STOCKS) {
+      html += `<div class="stock-card">
+        <h3>${stock} 周K</h3>
+        <img src="${base}${stock}_周K.png" alt="${stock} 周K"
+             loading="lazy" onclick="preview(this.src)" onerror="imgError(this)">
+      </div>`;
+    }
+    html += '</div>';
+
+    area.innerHTML = html;
+  }
+
+  renderCalendar();
+  renderContent();
+}
+
+function preview(src) {
+  document.getElementById('previewImg').src = src;
+  document.getElementById('preview').classList.add('active');
+}
+
+render();
+</script>
+</body>
+</html>
