@@ -14,12 +14,14 @@ body {
 h1 { text-align: center; font-size: 20px; margin: 8px 0 2px; }
 .subtitle { text-align: center; color: #64748b; font-size: 12px; margin-bottom: 10px; }
 
-/* ===== 紧凑日历 ===== */
+/* ===== 紧凑日历（支持多月） ===== */
 .calendar {
   background: #fff; border-radius: 10px; padding: 10px 12px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06); margin-bottom: 12px;
   max-width: 480px; margin-left: auto; margin-right: auto;
 }
+.cal-month-block { margin-bottom: 4px; }
+.cal-month-block:last-child { margin-bottom: 0; }
 .cal-header {
   text-align: center; font-size: 14px; font-weight: 600; margin-bottom: 6px;
 }
@@ -49,6 +51,9 @@ h1 { text-align: center; font-size: 20px; margin: 8px 0 2px; }
   content: '今'; position: absolute; top: -4px; right: -4px;
   background: #dc2626; color: #fff; font-size: 8px; padding: 0 3px;
   border-radius: 3px; font-weight: 700; line-height: 1.4;
+}
+.cal-divider {
+  border: none; border-top: 1px solid #e2e8f0; margin: 6px 0;
 }
 
 /* ===== 日期标题 ===== */
@@ -118,24 +123,59 @@ footer { text-align: center; color: #94a3b8; font-size: 11px; margin-top: 20px; 
 <script>
 const STOCKS = ['天枢能源', '玉衡材料', '摇光电子'];
 const DOWS = ['日','一','二','三','四','五','六'];
+const MONTH_CN = ['一','二','三','四','五','六','七','八','九','十','十一','十二'];
 
-const START = new Date(2026, 6, 4);
-const END = new Date(2026, 6, 25);
-const TODAY = new Date();
+const folders = [
+  // 7月（4~31）
+  '07-04','07-05','07-06','07-07','07-08','07-09','07-10',
+  '07-11','07-12','07-13','07-14','07-15','07-16','07-17',
+  '07-18','07-19','07-20','07-21','07-22','07-23','07-24','07-25',
+  '07-26','07-27','07-28','07-29','07-30','07-31',
+  // 8月（整月）
+  '08-01','08-02','08-03','08-04','08-05','08-06','08-07',
+  '08-08','08-09','08-10','08-11','08-12','08-13','08-14',
+  '08-15','08-16','08-17','08-18','08-19','08-20','08-21',
+  '08-22','08-23','08-24','08-25','08-26','08-27','08-28',
+  '08-29','08-30','08-31',
+  // 9月（整月）
+  '09-01','09-02','09-03','09-04','09-05','09-06','09-07',
+  '09-08','09-09','09-10','09-11','09-12','09-13','09-14',
+  '09-15','09-16','09-17','09-18','09-19','09-20','09-21',
+  '09-22','09-23','09-24','09-25','09-26','09-27','09-28',
+  '09-29','09-30',
+  // 10月（整月）
+  '10-01','10-02','10-03','10-04','10-05','10-06','10-07',
+  '10-08','10-09','10-10','10-11','10-12','10-13','10-14',
+  '10-15','10-16','10-17','10-18','10-19','10-20','10-21',
+  '10-22','10-23','10-24','10-25','10-26','10-27','10-28',
+  '10-29','10-30','10-31',
+];
 
+// 自动推算起止日期
+const startParts = folders[0].split('-').map(Number);
+const endParts = folders[folders.length - 1].split('-').map(Number);
+const START = new Date(2026, startParts[0] - 1, startParts[1]);
+const END = new Date(2026, endParts[0] - 1, endParts[1]);
+
+// URL 参数模拟时间用于测试：?mock=2026-07-26T10:00
+const urlParams = new URLSearchParams(window.location.search);
+const mockTime = urlParams.get('mock');
+const TODAY = mockTime ? new Date(mockTime) : new Date();
+
+// 构建日期索引
+const dayMap = {}; // mmdd -> { date, mmdd, dow }
 const DAYS = [];
-for (let d = new Date(START); d <= END; d.setDate(d.getDate() + 1)) {
-  DAYS.push({
-    date: new Date(d),
-    mmdd: `${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`,
-    dow: DOWS[d.getDay()]
-  });
+for (const f of folders) {
+  const [m, d] = f.split('-').map(Number);
+  const date = new Date(2026, m - 1, d);
+  const entry = { date, mmdd: f, dow: DOWS[date.getDay()] };
+  DAYS.push(entry);
+  dayMap[f] = entry;
 }
 
 function isLocked(d) {
   if (d > TODAY) return true;
   if (d.toDateString() === TODAY.toDateString()) {
-    // 当天早上9点后才解锁
     if (TODAY.getHours() < 9) return true;
   }
   return false;
@@ -143,13 +183,11 @@ function isLocked(d) {
 function isToday(d) { return d.toDateString() === TODAY.toDateString(); }
 
 function imgError(el) {
-  // 隐藏整个 stock-card
   const card = el.closest('.stock-card');
   if (card) card.style.display = 'none';
 }
 
 function hideEmptySection() {
-  // 如果周K区所有卡片都隐藏了，连标题一起隐藏
   const wkCards = document.querySelectorAll('#weekKLine .stock-card');
   if (wkCards.length > 0) {
     const allHidden = Array.from(wkCards).every(c => c.style.display === 'none');
@@ -159,121 +197,157 @@ function hideEmptySection() {
   }
 }
 
-function render() {
-  let selectedIdx = DAYS.length - 1;
+// ---- 月份数据 ----
+
+const monthGroups = {};
+for (const d of DAYS) {
+  const m = d.date.getMonth();
+  if (!monthGroups[m]) monthGroups[m] = { year: d.date.getFullYear(), days: [] };
+  monthGroups[m].days.push(d.date.getDate());
+}
+const allMonths = Object.keys(monthGroups).map(Number).sort((a,b) => a-b);
+
+// ---- 渲染 ----
+
+let selectedIdx = DAYS.length - 1;
+(() => {
   for (let i = DAYS.length - 1; i >= 0; i--) {
     if (!isLocked(DAYS[i].date)) { selectedIdx = i; break; }
   }
+})();
 
-  function renderCalendar() {
-    const firstDay = new Date(2026, 6, 1);
-    const startPad = firstDay.getDay();
-    const daysInMonth = new Date(2026, 7, 0).getDate();
+// 当前查看的月份：默认定位到当天所在月
+let currentMonth = allMonths.includes(TODAY.getMonth()) ? TODAY.getMonth() : allMonths[0];
 
-    let html = `<div class="cal-header">2026年7月</div>
-      <div class="cal-grid">
-        ${['日','一','二','三','四','五','六'].map(d => `<div class="cal-weekday">${d}</div>`).join('')}`;
+function renderCalendar() {
+  const m = currentMonth;
+  const { year, days } = monthGroups[m];
+  const daySet = new Set(days);
+  const firstDay = new Date(year, m, 1);
+  const startPad = firstDay.getDay();
+  const daysInMonth = new Date(year, m + 1, 0).getDate();
 
-    for (let i = 0; i < startPad; i++) html += '<div class="cal-cell empty"></div>';
+  const isFirst = allMonths.indexOf(m) === 0;
+  const isLast = allMonths.indexOf(m) === allMonths.length - 1;
 
-    for (let day = 1; day <= daysInMonth; day++) {
-      const d = new Date(2026, 6, day);
-      const mmdd = `07-${String(day).padStart(2,'0')}`;
-      const isGameDay = DAYS.some(dd => dd.mmdd === mmdd);
-      const locked = isLocked(d);
-      const today = isToday(d);
-      const isActive = DAYS[selectedIdx] && DAYS[selectedIdx].mmdd === mmdd;
+  let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+    <span class="nav-btn" id="prevMonth" style="cursor:pointer;padding:2px 10px;font-size:16px;user-select:none;${isFirst?'visibility:hidden':''}">‹</span>
+    <span style="font-size:14px;font-weight:600;">${year}年${MONTH_CN[m]}月</span>
+    <span class="nav-btn" id="nextMonth" style="cursor:pointer;padding:2px 10px;font-size:16px;user-select:none;${isLast?'visibility:hidden':''}">›</span>
+  </div>`;
 
-      let cls = 'cal-cell';
-      if (!isGameDay) cls += ' empty';
-      else if (locked) cls += ' locked';
-      if (isActive) cls += ' active';
-      if (today && !locked) cls += ' cal-today';
+  html += `<div class="cal-grid">
+    ${['日','一','二','三','四','五','六'].map(d => `<div class="cal-weekday">${d}</div>`).join('')}`;
 
-      const onclick = isGameDay && !locked ? `selectDay('${mmdd}')` : '';
+  for (let i = 0; i < startPad; i++) html += '<div class="cal-cell empty"></div>';
 
-      html += `<div class="${cls}" ${onclick ? `onclick="${onclick}"` : ''}>
-        <span class="day-num">${day}</span>
-        ${isGameDay ? '<span class="day-dot has-img"></span>' : ''}
-      </div>`;
-    }
+  for (let day = 1; day <= daysInMonth; day++) {
+    const d = new Date(year, m, day);
+    const mmdd = `${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const isGameDay = daySet.has(day);
+    const locked = isLocked(d);
+    const today = isToday(d);
+    const isActive = DAYS[selectedIdx] && DAYS[selectedIdx].mmdd === mmdd;
 
-    html += '</div></div>';
-    document.getElementById('calendar').innerHTML = html;
+    let cls = 'cal-cell';
+    if (!isGameDay) cls += ' empty';
+    else if (locked) cls += ' locked';
+    if (isActive) cls += ' active';
+    if (today && !locked) cls += ' cal-today';
+
+    const onclick = isGameDay && !locked ? `selectDay('${mmdd}')` : '';
+
+    html += `<div class="${cls}" ${onclick ? `onclick="${onclick}"` : ''}>
+      <span class="day-num">${day}</span>
+      ${isGameDay ? '<span class="day-dot has-img"></span>' : ''}
+    </div>`;
   }
 
-  window.selectDay = function(mmdd) {
-    const idx = DAYS.findIndex(d => d.mmdd === mmdd);
-    if (idx === -1) return;
-    selectedIdx = idx;
-    renderCalendar();
-    renderContent();
+  html += '</div>';
+  document.getElementById('calendar').innerHTML = html;
+
+  // 绑定切换按钮
+  document.getElementById('prevMonth').onclick = function(e) {
+    e.stopPropagation();
+    const idx = allMonths.indexOf(currentMonth);
+    if (idx > 0) { currentMonth = allMonths[idx - 1]; renderCalendar(); renderContent(); }
   };
+  document.getElementById('nextMonth').onclick = function(e) {
+    e.stopPropagation();
+    const idx = allMonths.indexOf(currentMonth);
+    if (idx < allMonths.length - 1) { currentMonth = allMonths[idx + 1]; renderCalendar(); renderContent(); }
+  };
+}
 
-  function renderContent() {
-    const d = DAYS[selectedIdx];
-    const title = document.getElementById('dateTitle');
-    const area = document.getElementById('contentArea');
-    const locked = isLocked(d.date);
-
-    title.innerHTML = `7月${d.date.getDate()}日 <span class="dow">${d.dow}</span>`;
-
-    if (locked) {
-      const diff = Math.ceil((d.date - TODAY) / (1000*60*60*24));
-      area.innerHTML = `<div class="lock-overlay">
-        <div class="lock-icon">🔒</div>
-        <p>7月${d.date.getDate()}日（${d.dow}）尚未解锁</p>
-        <p style="font-size:13px;margin-top:4px;color:#cbd5e1;">还有 ${diff} 天解锁</p>
-      </div>`;
-      return;
-    }
-
-    const base = `K线行情/${d.mmdd}/`;
-
-    // 日K
-    let html = '<div class="section-label">📊 日K线</div><div class="stock-grid">';
-    for (const stock of STOCKS) {
-      html += `<div class="stock-card">
-        <h3>${stock}</h3>
-        <img src="${base}${stock}.png" alt="${stock}"
-             loading="lazy" onclick="preview(this.src)" onerror="imgError(this)">
-      </div>`;
-    }
-    html += '</div>';
-
-    // 周K（有图才显示）
-    html += '<div id="weekKLine"><div class="section-label">📊 周K线</div><div class="stock-grid">';
-    for (const stock of STOCKS) {
-      html += `<div class="stock-card" style="display:none">
-        <h3>${stock} 周K</h3>
-        <img src="${base}${stock}_周K.png" alt="${stock} 周K"
-              onclick="preview(this.src)" onload="this.closest('.stock-card').style.display='block'" onerror="imgError(this)">
-      </div>`;
-    }
-    html += '</div></div>';
-
-    area.innerHTML = html;
-    const wkImgs = document.querySelectorAll('#weekKLine img');
-    let wkDone = 0;
-    if (wkImgs.length === 0) return;
-    wkImgs.forEach(img => {
-      if (img.complete) {
-        if (img.naturalWidth > 0) img.closest('.stock-card').style.display = 'block';
-        wkDone++; if (wkDone === wkImgs.length) hideEmptySection();
-      } else {
-        img.onload = function() {
-          img.closest('.stock-card').style.display = 'block';
-          wkDone++; if (wkDone === wkImgs.length) hideEmptySection();
-        };
-        img.onerror = function() {
-          wkDone++; if (wkDone === wkImgs.length) hideEmptySection();
-        };
-      }
-    });
-  }
-
+window.selectDay = function(mmdd) {
+  const idx = DAYS.findIndex(d => d.mmdd === mmdd);
+  if (idx === -1) return;
+  selectedIdx = idx;
+  const m = DAYS[idx].date.getMonth();
+  if (m !== currentMonth) { currentMonth = m; }
   renderCalendar();
   renderContent();
+};
+
+function renderContent() {
+  const d = DAYS[selectedIdx];
+  const title = document.getElementById('dateTitle');
+  const area = document.getElementById('contentArea');
+  const locked = isLocked(d.date);
+
+  const monthCn = MONTH_CN[d.date.getMonth()];
+  title.innerHTML = `${monthCn}月${d.date.getDate()}日 <span class="dow">${d.dow}</span>`;
+
+  if (locked) {
+    const diff = Math.ceil((d.date - TODAY) / (1000*60*60*24));
+    area.innerHTML = `<div class="lock-overlay">
+      <div class="lock-icon">🔒</div>
+      <p>${monthCn}月${d.date.getDate()}日（${d.dow}）尚未解锁</p>
+      <p style="font-size:13px;margin-top:4px;color:#cbd5e1;">还有 ${diff} 天解锁</p>
+    </div>`;
+    return;
+  }
+
+  const base = `K线行情/${d.mmdd}/`;
+
+  let html = '<div class="section-label">📊 日K线</div><div class="stock-grid">';
+  for (const stock of STOCKS) {
+    html += `<div class="stock-card">
+      <h3>${stock}</h3>
+      <img src="${base}${stock}.png" alt="${stock}"
+           loading="lazy" onclick="preview(this.src)" onerror="imgError(this)">
+    </div>`;
+  }
+  html += '</div>';
+
+  html += '<div id="weekKLine"><div class="section-label">📊 周K线</div><div class="stock-grid">';
+  for (const stock of STOCKS) {
+    html += `<div class="stock-card" style="display:none">
+      <h3>${stock} 周K</h3>
+      <img src="${base}${stock}_周K.png" alt="${stock} 周K"
+            onclick="preview(this.src)" onload="this.closest('.stock-card').style.display='block'" onerror="imgError(this)">
+    </div>`;
+  }
+  html += '</div></div>';
+
+  area.innerHTML = html;
+  const wkImgs = document.querySelectorAll('#weekKLine img');
+  let wkDone = 0;
+  if (wkImgs.length === 0) return;
+  wkImgs.forEach(img => {
+    if (img.complete) {
+      if (img.naturalWidth > 0) img.closest('.stock-card').style.display = 'block';
+      wkDone++; if (wkDone === wkImgs.length) hideEmptySection();
+    } else {
+      img.onload = function() {
+        img.closest('.stock-card').style.display = 'block';
+        wkDone++; if (wkDone === wkImgs.length) hideEmptySection();
+      };
+      img.onerror = function() {
+        wkDone++; if (wkDone === wkImgs.length) hideEmptySection();
+      };
+    }
+  });
 }
 
 function preview(src) {
@@ -281,7 +355,8 @@ function preview(src) {
   document.getElementById('preview').classList.add('active');
 }
 
-render();
+renderCalendar();
+renderContent();
 </script>
 </body>
 </html>
