@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>模拟炒股 · 周报汇总</title>
+<style>
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  max-width: 640px; margin: 0 auto; padding: 40px 20px 60px;
+  background: #fafbfc; color: #1e293b; line-height: 1.8;
+}
+h1 { text-align: center; font-size: 26px; margin-bottom: 4px; }
+.subtitle { text-align: center; color: #64748b; font-size: 14px; margin-bottom: 36px; }
+.card {
+  background: #fff; border-radius: 12px; padding: 20px 24px; margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: box-shadow 0.2s;
+  display: flex; justify-content: space-between; align-items: center;
+  text-decoration: none; color: inherit; border: 1px solid #e2e8f0;
+}
+.card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); border-color: #2563eb; }
+.card-left { display: flex; align-items: center; gap: 14px; }
+.card-rank { font-size: 28px; }
+.card-info h2 { margin: 0; font-size: 17px; font-weight: 600; }
+.card-info p { margin: 2px 0 0; font-size: 13px; color: #64748b; }
+.card-arrow { color: #94a3b8; font-size: 20px; }
+.week-tag {
+  display: inline-block; font-size: 11px; padding: 1px 8px; border-radius: 4px;
+  margin-left: 8px; font-weight: 500;
+}
+.tag-1 { background: #fef2f2; color: #dc2626; }
+.tag-2 { background: #fff7ed; color: #ea580c; }
+.tag-3 { background: #eff6ff; color: #2563eb; }
+.divider { border: none; border-top: 1px solid #e2e8f0; margin: 36px 0 28px; }
+.note {
+  background: #f8fafc; border-radius: 10px; padding: 16px 20px;
+  font-size: 13px; color: #64748b; line-height: 1.7;
+}
+.note strong { color: #1e293b; }
+</style>
+</head>
+<body>
+
+<h1>📈 模拟炒股 · 周报</h1>
+<p class="subtitle">每周分析报告 · 点击查看详情</p>
+
+<a class="card" href="分析报告_第一周.html">
+  <div class="card-left">
+    <div class="card-rank">🥇</div>
+    <div class="card-info">
+      <h2>第一周 <span class="week-tag tag-1">7/4 → 7/11</span></h2>
+      <p>玉衡材料 +13.4% · 摇光电子 -10.1% · 行情分化</p>
+    </div>
+  </div>
+  <div class="card-arrow">→</div>
+</a>
+
+<a class="card" href="分析报告_第二周.html">
+  <div class="card-left">
+    <div class="card-rank">🥇</div>
+    <div class="card-info">
+      <h2>第二周 <span class="week-tag tag-2">7/11 → 7/18</span></h2>
+      <p>三支全涨 · 摇光暴涨 32% · 全员盈利</p>
+    </div>
+  </div>
+  <div class="card-arrow">→</div>
+</a>
+
+<a class="card" href="分析报告_第三周.html">
+  <div class="card-left">
+    <div class="card-rank">🥇</div>
+    <div class="card-info">
+      <h2>第三周 <span class="week-tag tag-3">7/18 → 7/25</span></h2>
+      <p>玉衡材料 +27.6% · 玉衡连涨三周</p>
+    </div>
+  </div>
+  <div class="card-arrow">→</div>
+</a>
+
+<hr class="divider">
+
+<div class="note">
+  <strong>💡 说明</strong><br>
+  每周六更新。排名仅显示前三名，具体金额和仓位游戏结束才揭晓。
+  点击任意周报可查看该周的行情回顾、选手操作分析和心理观察。
+</div>
+
+</body>
+</html>
