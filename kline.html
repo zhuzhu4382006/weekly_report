@@ -515,13 +515,6 @@ function renderChart() {
     ],
     dataZoom: [
       {
-        type: 'inside',
-        xAxisIndex: [0, 1],
-        start: Math.max(0, 100 - Math.round(125 / chartData.length * 100)),
-        end: 100,
-        minSpan: 3,
-      },
-      {
         show: true,
         type: 'slider',
         xAxisIndex: [0, 1],
