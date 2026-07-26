@@ -515,6 +515,12 @@ function renderChart() {
     ],
     dataZoom: [
       {
+        type: 'inside',
+        xAxisIndex: [0, 1],
+        zoomOnMouseWheel: false,
+        moveOnMouseMove: true,
+      },
+      {
         show: true,
         type: 'slider',
         xAxisIndex: [0, 1],
