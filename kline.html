@@ -229,17 +229,27 @@ let currentMode = 'daily'; // 'daily' | 'weekly'
 let zoomStart = 80;
 let zoomEnd = 100;
 
-// 从 URL 读取 ?day=N 和 ?stock=N
-const urlParams = new URLSearchParams(window.location.search);
-const dayParam = urlParams.get('day');
-const stockParam = urlParams.get('stock');
-if (dayParam) {
-  currentDay = parseInt(dayParam);
-  if (isNaN(currentDay) || currentDay < 1) currentDay = 9999;
+// 从 URL hash 读取隐蔽参数（base64 编码的游戏日）
+// 用法: kline.html#MTE2 （"116" 的 base64）— 仅限组织者使用
+const HASH_DAY = (function() {
+  const h = window.location.hash.replace('#', '');
+  if (!h) return null;
+  try {
+    const decoded = atob(h);
+    const n = parseInt(decoded, 10);
+    return (!isNaN(n) && n >= 1) ? n : null;
+  } catch(e) { return null; }
+})();
+if (HASH_DAY) {
+  currentDay = HASH_DAY;
 } else {
-  // 没有 ?day= 参数时，根据今天日期自动选择游戏日
+  // 没有 hash 参数时，根据今天日期自动选择游戏日
   currentDay = getTodayGameDay();
 }
+
+// 从 URL 读取 ?stock=N（仅切换股票，无敏感数据）
+const urlParams = new URLSearchParams(window.location.search);
+const stockParam = urlParams.get('stock');
 
 async function loadData() {
   try {
@@ -377,8 +387,7 @@ function renderChart() {
   if (lockedDays > 0) {
     notice.innerHTML = '🔒 已锁定：只显示到 <strong>' + lastVisible.date +
       '</strong>（当前游戏日 ' + currentDay + '，共 ' + chartData.length +
-      ' ' + dataLabel + '，后面 ' + lockedDays + ' 交易日已锁定）&nbsp;' +
-      '<a href="?day=' + (currentDay + 5) + '" style="color:#4a6cf7;text-decoration:none;">预览+5天 →</a>';
+      ' ' + dataLabel + '，后面 ' + lockedDays + ' 交易日已锁定）';
   } else {
     notice.innerHTML = '显示全部 ' + chartData.length + ' ' + dataLabel +
       (currentMode === 'weekly' ? '（' + visibleData.length + ' 个交易日）' : '');
@@ -632,8 +641,9 @@ function renderChart() {
 
   chart.setOption(option, true);
 
-  // 初始化缩放
-  zoomStart = Math.max(0, 100 - Math.round(80 / chartData.length * 100));
+  // 初始化缩放（周K按20根算，日K按80根算）
+  var targetBars = 80;
+  zoomStart = Math.max(0, 100 - Math.round(targetBars / chartData.length * 100));
   zoomEnd = 100;
   chart.dispatchAction({ type: 'dataZoom', dataZoomIndex: 0, start: zoomStart, end: zoomEnd });
   document.getElementById('zoomBar').style.display = 'flex';
@@ -694,7 +704,9 @@ function getTotalBars() {
 
 function panStep() {
   var total = getTotalBars();
-  return total > 0 ? (100 / total) : 0.1;
+  if (total <= 0) return 0.1;
+  if (currentMode === 'weekly') total = Math.ceil(total / 5);
+  return 100 / total;
 }
 
 function zoomIn() {
@@ -810,6 +822,23 @@ if (stockParam && ["A","B","C"].includes(stockParam)) {
 // 更新调试栏游戏日显示
 var dl = document.getElementById('debugDayLabel');
 if (dl) dl.textContent = '游戏日: ' + (currentDay >= 9999 ? '全部' : currentDay);
+
+// ============================================================
+//  隐蔽入口：Ctrl+Shift+K → 输入游戏日（仅限组织者使用）
+// ============================================================
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.shiftKey && (e.key === 'K' || e.key === 'k')) {
+    e.preventDefault();
+    var input = prompt('输入游戏日数字查看K线：', currentDay >= 9999 ? '' : '' + currentDay);
+    if (input !== null && input.trim() !== '') {
+      var n = parseInt(input, 10);
+      if (!isNaN(n) && n > 0) {
+        currentDay = n;
+        renderChart();
+      }
+    }
+  }
+});
 
 </script>
 </body>
