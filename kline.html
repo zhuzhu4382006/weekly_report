@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>K线行情 · 模拟炒股</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+  background: #111216; color: #e0e2e6;
+  max-width: 100%; margin: 0; padding: 0;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== Header ===== */
+.header {
+  background: #1a1c23; padding: 12px 16px; border-bottom: 1px solid #2a2d36;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.header h1 {
+  font-size: 17px; font-weight: 600; color: #e8eaed;
+  margin-right: auto;
+}
+.stock-selector {
+  background: #2a2d36; border: none; color: #e8eaed;
+  padding: 6px 28px 6px 12px; border-radius: 6px; font-size: 15px;
+  font-weight: 600; cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 8px center;
+}
+.stock-selector:focus { outline: none; border-color: #4a6cf7; }
+
+/* ===== Mode Toggle (日K / 周K) ===== */
+.mode-toggle {
+  display: flex; background: #2a2d36; border-radius: 6px; overflow: hidden;
+  flex-shrink: 0;
+}
+.mode-btn {
+  padding: 5px 14px; border: none; background: transparent;
+  color: #6b7280; font-size: 13px; font-weight: 500; cursor: pointer;
+  transition: all 0.15s;
+}
+.mode-btn:hover { color: #9aa0a6; }
+.mode-btn.active { background: #4a6cf7; color: #fff; }
+
+/* ===== Price Info Bar ===== */
+.price-bar {
+  background: #1a1c23; padding: 12px 16px; border-bottom: 1px solid #2a2d36;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+.price-current { font-size: 28px; font-weight: 700; color: #e8eaed; letter-spacing: -0.5px; }
+.price-change { font-size: 14px; font-weight: 500; padding: 2px 8px; border-radius: 4px; }
+.price-change.up { color: #ef5350; background: rgba(239,83,80,0.12); }
+.price-change.down { color: #26a69a; background: rgba(38,166,154,0.12); }
+.price-detail {
+  display: flex; gap: 16px; font-size: 12px; color: #9aa0a6; margin-left: auto;
+}
+.price-detail span { white-space: nowrap; }
+.price-detail .label { color: #6b7280; margin-right: 2px; }
+.price-detail .val { color: #e8eaed; font-weight: 500; }
+
+/* ===== Time Lock Notice ===== */
+.lock-notice {
+  background: #1e2029; text-align: center; padding: 8px 16px;
+  font-size: 12px; color: #6b7280; border-bottom: 1px solid #2a2d36;
+}
+.lock-notice strong { color: #9aa0a6; }
+
+/* ===== Chart ===== */
+.chart-wrap {
+  background: #111216; padding: 0; position: relative;
+  width: 100%; height: calc(100vh - 210px);
+}
+
+/* ===== Loading ===== */
+.loading {
+  display: flex; align-items: center; justify-content: center;
+  height: 400px; color: #6b7280; font-size: 14px;
+}
+.loading .spinner {
+  width: 24px; height: 24px; border: 3px solid #2a2d36;
+  border-top-color: #4a6cf7; border-radius: 50%;
+  animation: spin 0.8s linear infinite; margin-right: 10px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== Footer ===== */
+.footer {
+  text-align: center; padding: 16px; font-size: 11px; color: #4b4f58;
+  border-top: 1px solid #2a2d36;
+}
+.footer a { color: #5a6e99; text-decoration: none; margin: 0 8px; }
+
+/* ===== Responsive ===== */
+@media (max-width: 600px) {
+  .price-current { font-size: 22px; }
+  .price-bar { gap: 10px; padding: 10px 12px; }
+  .price-detail { gap: 10px; font-size: 11px; margin-left: 0; width: 100%; justify-content: space-between; }
+  .chart-wrap { height: calc(100vh - 170px); }
+  .header { padding: 10px 12px; }
+  .header h1 { font-size: 15px; }
+}
+
+/* ===== Tooltip style override ===== */
+.chart-tooltip { background: #1e2029; border: 1px solid #2a2d36; border-radius: 6px; padding: 8px 12px; }
+
+/* ===== MA Legend Overlay ===== */
+#maLegend {
+  position: absolute; left: 7%; top: 6px; z-index: 10;
+  font-size: 11px; font-family: monospace; pointer-events: none;
+}
+#maLegend span { margin-right: 12px; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📈 K线行情</h1>
+  <span id="fixedClose" style="font-size:14px;font-weight:600;color:#e8eaed;">--</span>
+  <div class="mode-toggle" id="modeToggle">
+    <button class="mode-btn active" data-mode="daily">日K</button>
+    <button class="mode-btn" data-mode="weekly">周K</button>
+  </div>
+  <select class="stock-selector" id="stockSelector">
+    <option value="A">天枢能源</option>
+    <option value="B">玉衡材料</option>
+    <option value="C">摇光电子</option>
+  </select>
+</div>
+
+<div class="price-bar" id="priceBar">
+  <div class="price-current" id="priceCurrent">--</div>
+  <div class="price-detail" id="priceDetail">
+    <span><span class="label">开</span><span class="val" id="pdOpen">--</span></span>
+    <span><span class="label">高</span><span class="val" id="pdHigh">--</span></span>
+    <span><span class="label">低</span><span class="val" id="pdLow">--</span></span>
+    <span><span class="label">收</span><span class="val" id="pdClose">--</span></span>
+    <span><span class="label">量</span><span class="val" id="pdVol">--</span></span>
+  </div>
+</div>
+
+<div class="lock-notice" id="lockNotice" style="display:none;"></div>
+<div id="debugBar" style="background:#1e2029;padding:4px 16px;font-size:12px;color:#6b7280;border-bottom:1px solid #2a2d36;display:flex;align-items:center;gap:10px;">
+  <span id="debugDayLabel">游戏日: 111</span>
+  <span id="debugCompare"></span>
+</div>
+
+<div id="chartLoading" class="loading">
+  <div class="spinner"></div>
+  <span>加载行情数据...</span>
+</div>
+<div class="chart-wrap" id="chartWrap" style="display:none;">
+  <div id="maLegend"></div>
+  <div id="klineChart" style="width:100%;height:100%;"></div>
+</div>
+
+<div class="footer">
+  <a href="index.html">← 周报主页</a>
+  <a href="hangqing.html">📷 截图浏览</a>
+</div>
+
+<script>
+// ============================================================
+//  现实日期 → 游戏日 映射（来自 price_data.xlsx）
+// ============================================================
+const REAL_DATE_MAP = {"2026-07-04":1,"2026-07-05":6,"2026-07-06":11,"2026-07-07":16,"2026-07-08":21,"2026-07-09":26,"2026-07-10":31,"2026-07-11":36,"2026-07-12":41,"2026-07-13":46,"2026-07-14":51,"2026-07-15":56,"2026-07-16":61,"2026-07-17":66,"2026-07-18":71,"2026-07-19":76,"2026-07-20":81,"2026-07-21":86,"2026-07-22":91,"2026-07-23":96,"2026-07-24":101,"2026-07-25":106,"2026-07-26":111,"2026-07-27":116,"2026-07-28":121,"2026-07-29":126,"2026-07-30":131,"2026-07-31":136,"2026-08-01":141,"2026-08-02":146,"2026-08-03":151,"2026-08-04":156,"2026-08-05":161,"2026-08-06":166,"2026-08-07":171,"2026-08-08":176,"2026-08-09":181,"2026-08-10":186,"2026-08-11":191,"2026-08-12":196,"2026-08-13":201,"2026-08-14":206,"2026-08-15":211,"2026-08-16":216,"2026-08-17":221,"2026-08-18":226,"2026-08-19":231,"2026-08-20":236,"2026-08-21":241,"2026-08-22":246,"2026-08-23":251,"2026-08-24":256,"2026-08-25":261,"2026-08-26":266,"2026-08-27":271,"2026-08-28":276,"2026-08-29":281,"2026-08-30":286,"2026-08-31":291,"2026-09-01":296,"2026-09-02":301,"2026-09-03":306,"2026-09-04":311,"2026-09-05":316,"2026-09-06":321,"2026-09-07":326,"2026-09-08":331,"2026-09-09":336,"2026-09-10":341,"2026-09-11":346,"2026-09-12":351,"2026-09-13":356,"2026-09-14":361,"2026-09-15":366,"2026-09-16":371,"2026-09-17":376,"2026-09-18":381,"2026-09-19":386,"2026-09-20":391,"2026-09-21":396,"2026-09-22":401,"2026-09-23":406,"2026-09-24":411,"2026-09-25":416,"2026-09-26":421,"2026-09-27":426,"2026-09-28":431,"2026-09-29":436,"2026-09-30":441,"2026-10-01":446,"2026-10-02":451,"2026-10-03":456,"2026-10-04":461,"2026-10-05":466,"2026-10-06":471,"2026-10-07":476,"2026-10-08":481};
+
+// 根据今日日期获取对应的游戏日（9点前显示上一天）
+function getTodayGameDay() {
+  var now = new Date();
+  var hour = now.getHours();
+  // 9点前用昨天的日期
+  if (hour < 9) {
+    now.setDate(now.getDate() - 1);
+  }
+  var y = now.getFullYear();
+  var m = String(now.getMonth() + 1).padStart(2, '0');
+  var d = String(now.getDate()).padStart(2, '0');
+  var dateStr = y + '-' + m + '-' + d;
+  var gd = REAL_DATE_MAP[dateStr];
+  if (gd) return gd;
+  // 没精确匹配（周末等），向前找最近的有映射的日期
+  for (var i = 1; i <= 10; i++) {
+    now.setDate(now.getDate() - 1);
+    var ym = String(now.getMonth() + 1).padStart(2, '0');
+    var dd = String(now.getDate()).padStart(2, '0');
+    gd = REAL_DATE_MAP[y + '-' + ym + '-' + dd];
+    if (gd) return gd;
+  }
+  return 9999; // fallback: 显示全部
+}
+
+// ============================================================
+//  数据加载
+// ============================================================
+let rawData = null;
+let currentStock = 'A';
+let currentDay = 9999; // 默认显示全部
+let currentMode = 'daily'; // 'daily' | 'weekly'
+
+// 从 URL 读取 ?day=N 和 ?stock=N
+const urlParams = new URLSearchParams(window.location.search);
+const dayParam = urlParams.get('day');
+const stockParam = urlParams.get('stock');
+if (dayParam) {
+  currentDay = parseInt(dayParam);
+  if (isNaN(currentDay) || currentDay < 1) currentDay = 9999;
+} else {
+  // 没有 ?day= 参数时，根据今天日期自动选择游戏日
+  currentDay = getTodayGameDay();
+}
+
+async function loadData() {
+  try {
+    const resp = await fetch('kline_data.json');
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    rawData = await resp.json();
+    document.getElementById('chartLoading').style.display = 'none';
+    document.getElementById('chartWrap').style.display = 'block';
+    renderChart();
+  } catch (e) {
+    document.getElementById('chartLoading').innerHTML =
+      '<span style="color:#ef5350;">❌ 加载失败：' + e.message + '</span>';
+  }
+}
+
+// ============================================================
+//  工具函数
+// ============================================================
+function fmt(v) {
+  return v.toFixed(2);
+}
+function fmtVol(v) {
+  if (v >= 100000000) return (v / 100000000).toFixed(1) + '亿';
+  if (v >= 10000) return (v / 10000).toFixed(1) + '万';
+  return v.toString();
+}
+function fmtAmount(v) {
+  // 成交额（元 → 亿）
+  if (v >= 100000000) return (v / 100000000).toFixed(1) + '亿';
+  if (v >= 10000) return (v / 10000).toFixed(1) + '万';
+  return v.toString();
+}
+
+// MA 计算
+function calcMA(data, period) {
+  const result = [];
+  for (let i = 0; i < data.length; i++) {
+    if (i < period - 1) {
+      result.push(null); // 用 null 而不是 '-'，ECharts 自动跳过不会断线
+    } else {
+      let sum = 0;
+      for (let j = i - period + 1; j <= i; j++) {
+        sum += data[j].close;
+      }
+      result.push(sum / period);
+    }
+  }
+  return result;
+}
+
+// 获取 ISO 周一的日期字符串
+function getWeekStart(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const day = d.getDay(); // 0=Sun, 1=Mon, ...
+  const diff = (day === 0 ? 6 : day - 1); // 周一偏移
+  const mon = new Date(d);
+  mon.setDate(d.getDate() - diff);
+  const y = mon.getFullYear();
+  const m = String(mon.getMonth() + 1).padStart(2, '0');
+  const dd = String(mon.getDate()).padStart(2, '0');
+  return y + '-' + m + '-' + dd;
+}
+
+// 日K → 周K 聚合
+function aggregateWeekly(dailyData) {
+  const weeks = {}; // weekKey -> { date, open, high, low, close, volume, count }
+  for (const d of dailyData) {
+    const wk = getWeekStart(d.date);
+    if (!weeks[wk]) {
+      weeks[wk] = { date: wk, open: d.open, high: d.high, low: d.low, close: d.close, volume: d.volume };
+    } else {
+      const w = weeks[wk];
+      w.high = Math.max(w.high, d.high);
+      w.low = Math.min(w.low, d.low);
+      w.close = d.close;
+      w.volume += d.volume;
+    }
+  }
+  return Object.values(weeks).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+// ============================================================
+//  渲染
+// ============================================================
+function renderChart() {
+  if (!rawData) return;
+  const stock = rawData.stocks[currentStock];
+  if (!stock) return;
+
+  // 数据切片：根据 currentDay 截取
+  const gameDateMap = rawData.meta.gameDateMap;
+  let maxDate = null;
+  if (currentDay < 9999 && gameDateMap[currentDay]) {
+    maxDate = gameDateMap[currentDay];
+  }
+
+  let allData = stock.data;
+  let visibleData = allData;
+  let lockedDays = 0;
+
+  if (maxDate) {
+    const idx = allData.findIndex(d => d.date === maxDate);
+    if (idx >= 0) {
+      visibleData = allData.slice(0, idx + 1);
+      lockedDays = allData.length - visibleData.length;
+    } else {
+      // 没找到精确匹配，找最接近 <= maxDate 的日期
+      const idx2 = allData.findIndex(d => d.date > maxDate);
+      if (idx2 > 0) {
+        visibleData = allData.slice(0, idx2);
+        lockedDays = allData.length - visibleData.length;
+      }
+      // 如果连接近的都没有（maxDate在所有数据之前），显示全部
+    }
+  }
+
+  if (visibleData.length === 0) {
+    document.getElementById('priceBar').style.display = 'none';
+    document.getElementById('chartWrap').innerHTML =
+      '<div class="loading" style="height:400px;"><span>暂无数据（游戏日 ' + currentDay + '）</span></div>';
+    return;
+  }
+
+  // 周K聚合
+  let chartData = visibleData;
+  let dataLabel = '交易日';
+  if (currentMode === 'weekly') {
+    chartData = aggregateWeekly(visibleData);
+    dataLabel = '周';
+  }
+
+  // 更新锁提示
+  const notice = document.getElementById('lockNotice');
+  const lastVisible = chartData[chartData.length - 1];
+  if (lockedDays > 0) {
+    notice.innerHTML = '🔒 已锁定：只显示到 <strong>' + lastVisible.date +
+      '</strong>（当前游戏日 ' + currentDay + '，共 ' + chartData.length +
+      ' ' + dataLabel + '，后面 ' + lockedDays + ' 交易日已锁定）&nbsp;' +
+      '<a href="?day=' + (currentDay + 5) + '" style="color:#4a6cf7;text-decoration:none;">预览+5天 →</a>';
+  } else {
+    notice.innerHTML = '显示全部 ' + chartData.length + ' ' + dataLabel +
+      (currentMode === 'weekly' ? '（' + visibleData.length + ' 个交易日）' : '');
+  }
+
+  // 更新价格信息
+  const last = chartData[chartData.length - 1];
+  const prev = chartData.length > 1 ? chartData[chartData.length - 2] : null;
+  const change = prev ? ((last.close - prev.close) / prev.close * 100) : 0;
+
+  // 固定显示当天收盘价（不随鼠标变化）
+  var fc = document.getElementById('fixedClose');
+  if (fc) fc.textContent = '收盘: ¥' + fmt(last.close);
+
+  // 对比上一游戏日（通过 gameDateMap 映射到股票数据日期）
+  var compPrevDay = (currentDay >= 6 && currentDay < 9999) ? currentDay - 5 : null;
+  if (compPrevDay !== null) {
+    var compPrevDate = gameDateMap[compPrevDay];
+    var compPrevClose = null;
+    if (compPrevDate) {
+      for (var pi = allData.length - 1; pi >= 0; pi--) {
+        if (allData[pi].date === compPrevDate) { compPrevClose = allData[pi].close; break; }
+      }
+    }
+    if (compPrevClose !== null) {
+      var compPrevDisp = fmt(compPrevClose);
+      var compCurrDisp = fmt(last.close);
+      var compPrevR = parseFloat(compPrevDisp);
+      var compCurrR = parseFloat(compCurrDisp);
+      var compChg = (compCurrR - compPrevR) / compPrevR * 100;
+      var compColor = compChg >= 0 ? '#ef5350' : '#26a69a';
+      var compSign = compChg >= 0 ? '+' : '';
+      document.getElementById("debugCompare").innerHTML =
+        '<span style="color:#e8eaed;">当前 ' + currentDay + '日</span> ¥' + compCurrDisp +
+        ' <span style="color:#6b7280;">vs 第' + compPrevDay + '日</span> ¥' + compPrevDisp +
+        ' <span style="color:' + compColor + ';font-weight:600;">' + compSign + compChg.toFixed(2) + '%</span>';
+    }
+  }
+
+  document.getElementById('priceCurrent').textContent = '¥' + fmt(last.close);
+
+
+
+  document.getElementById('pdOpen').textContent = fmt(last.open);
+  document.getElementById('pdHigh').textContent = fmt(last.high);
+  document.getElementById('pdLow').textContent = fmt(last.low);
+  document.getElementById('pdClose').textContent = fmt(last.close);
+  document.getElementById('pdVol').textContent = fmtAmount(last.amount || last.volume * (last.close || 1));
+
+  // 准备 ECharts 数据
+  const dates = chartData.map(d => d.date);
+  // ECharts candlestick 格式: [open, close, lowest, highest]
+  const kValues = chartData.map(d => [d.open, d.close, d.low, d.high]);
+  // 成交额（元），港股没有amount时用 volume * close 估算
+  const amounts = chartData.map(d => d.amount || d.volume * (d.close || 1));
+
+  // MA（日K用5/10/20/60日，周K用5/10/20/60周）
+  const ma5 = calcMA(chartData, 5);
+  const ma10 = calcMA(chartData, 10);
+  const ma20 = calcMA(chartData, 20);
+  const ma60 = calcMA(chartData, 60);
+
+  // 成交量颜色（跟K线一致）
+  const volColors = chartData.map(d => d.close >= d.open ? '#ef5350' : '#26a69a');
+
+  // ===== ECharts =====
+  const dom = document.getElementById('klineChart');
+  const chart = echarts.init(dom, 'dark');
+
+  const option = {
+    backgroundColor: '#111216',
+    animation: false,
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'cross' },
+      backgroundColor: '#1e2029',
+      borderColor: '#2a2d36',
+      borderWidth: 1,
+      textStyle: { color: '#e0e2e6', fontSize: 12 },
+      formatter: function(params) {
+        const p = params;
+        const d = p.find(i => i.seriesName === 'K线');
+        const v = p.find(i => i.seriesName === '成交量');
+        const date = p[0].axisValueLabel || '';
+        const isWeekly = currentMode === 'weekly';
+        const idx = p[0].dataIndex;
+        // 涨跌幅
+        var chgStr = '';
+        if (idx > 0 && idx < chartData.length) {
+          var pc = chartData[idx - 1].close;
+          var cc = chartData[idx].close;
+          var chg = (cc - pc) / pc * 100;
+          chgStr = ' <span style="color:' + (chg >= 0 ? '#ef5350' : '#26a69a') + ';font-weight:600;">' + (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%</span>';
+        }
+        let html = '<div style="font-size:13px;font-weight:600;margin-bottom:6px;">' + date + (isWeekly ? ' 周' : '') + chgStr + '</div>';
+        if (d) {
+          var cd = chartData[idx];
+          html += '<div style="display:flex;gap:12px;flex-wrap:wrap;font-size:12px;">';
+          html += '<span>开: <b>' + fmt(cd.open) + '</b></span>';
+          html += '<span>收: <b>' + fmt(cd.close) + '</b></span>';
+          html += '<span>低: <b>' + fmt(cd.low) + '</b></span>';
+          html += '<span>高: <b>' + fmt(cd.high) + '</b></span>';
+          html += '</div>';
+        }
+        if (v) {
+          html += '<div style="font-size:12px;margin-top:2px;">成交额: <b>' + fmtAmount(v.data) + '</b></div>';
+        }
+        // MA values
+        const mas = [];
+        if (ma5[idx] !== null) mas.push('MA5: <b>' + fmt(ma5[idx]) + '</b>');
+        if (ma10[idx] !== null) mas.push('MA10: <b>' + fmt(ma10[idx]) + '</b>');
+        if (ma20[idx] !== null) mas.push('MA20: <b>' + fmt(ma20[idx]) + '</b>');
+        if (ma60[idx] !== null) mas.push('MA60: <b>' + fmt(ma60[idx]) + '</b>');
+        if (mas.length) html += '<div style="font-size:12px;margin-top:2px;">' + mas.join('&nbsp;&nbsp;') + '</div>';
+        return html;
+      }
+    },
+    axisPointer: {
+      link: [{ xAxisIndex: 'all' }],
+      label: { backgroundColor: '#2a2d36' }
+    },
+    grid: [
+      { left: '6%', right: '6%', top: '8%', height: '62%' },
+      { left: '6%', right: '6%', top: '76%', height: '16%' }
+    ],
+    xAxis: [
+      {
+        type: 'category',
+        data: dates,
+        gridIndex: 0,
+        axisLine: { lineStyle: { color: '#2a2d36' } },
+        axisLabel: { color: '#6b7280', fontSize: 10, showMinLabel: true, showMaxLabel: true },
+        splitLine: { show: true, lineStyle: { color: '#1e2029', type: 'dashed' } },
+        axisTick: { alignWithLabel: true }
+      },
+      {
+        type: 'category',
+        data: dates,
+        gridIndex: 1,
+        axisLine: { lineStyle: { color: '#2a2d36' } },
+        axisLabel: { show: false },
+        splitLine: { show: false },
+      }
+    ],
+    yAxis: [
+      {
+        gridIndex: 0,
+        scale: true,
+        splitNumber: 5,
+        axisLine: { show: false },
+        axisLabel: { color: '#6b7280', fontSize: 10 },
+        splitLine: { show: true, lineStyle: { color: '#1e2029', type: 'dashed' } },
+      },
+      {
+        gridIndex: 1,
+        scale: true,
+        splitNumber: 3,
+        axisLine: { show: false },
+        axisLabel: { show: false },
+        splitLine: { show: false },
+      }
+    ],
+    dataZoom: [
+      {
+        type: 'inside',
+        xAxisIndex: [0, 1],
+        start: Math.max(0, 100 - Math.round(125 / chartData.length * 100)),
+        end: 100,
+        minSpan: 3,
+      },
+      {
+        show: true,
+        type: 'slider',
+        xAxisIndex: [0, 1],
+        start: Math.max(0, 100 - Math.round(125 / chartData.length * 100)),
+        end: 100,
+        minSpan: 5,
+        height: 14,
+        bottom: 2,
+        borderColor: '#2a2d36',
+        backgroundColor: '#1a1c23',
+        fillerColor: 'rgba(74,108,247,0.2)',
+        handleStyle: { color: '#4a6cf7' },
+        textStyle: { color: '#6b7280', fontSize: 10 },
+        labelFormatter: function(v) { return dates[Math.round(v)] || ''; },
+      }
+    ],
+    series: [
+      {
+        name: 'K线',
+        type: 'candlestick',
+        xAxisIndex: 0,
+        yAxisIndex: 0,
+        data: kValues,
+        itemStyle: {
+          color: '#ef5350',
+          color0: '#26a69a',
+          borderColor: '#ef5350',
+          borderColor0: '#26a69a',
+        },
+      },
+      {
+        name: 'MA5',
+        type: 'line',
+        xAxisIndex: 0,
+        yAxisIndex: 0,
+        data: ma5,
+        smooth: true,
+        symbol: 'none',
+        lineStyle: { width: 1, color: '#fdd835' },
+        z: 2,
+      },
+      {
+        name: 'MA10',
+        type: 'line',
+        xAxisIndex: 0,
+        yAxisIndex: 0,
+        data: ma10,
+        smooth: true,
+        symbol: 'none',
+        lineStyle: { width: 1, color: '#4a6cf7' },
+        z: 2,
+      },
+      {
+        name: 'MA20',
+        type: 'line',
+        xAxisIndex: 0,
+        yAxisIndex: 0,
+        data: ma20,
+        smooth: true,
+        symbol: 'none',
+        lineStyle: { width: 1, color: '#ab47bc' },
+        z: 2,
+      },
+      {
+        name: 'MA60',
+        type: 'line',
+        xAxisIndex: 0,
+        yAxisIndex: 0,
+        data: ma60,
+        smooth: true,
+        symbol: 'none',
+        lineStyle: { width: 1, color: '#78909c' },
+        z: 2,
+      },
+      {
+        name: '成交量',
+        type: 'bar',
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        data: amounts,
+        itemStyle: { color: function(p) { return volColors[p.dataIndex]; } },
+      }
+    ]
+  };
+
+  // 更新均线数值标注（随鼠标移动变化，颜色与K线均线一致）
+  var MA_COLORS = {MA5: '#fdd835', MA10: '#4a6cf7', MA20: '#ab47bc', MA60: '#78909c'};
+  var MA_KEYS = ['MA5', 'MA10', 'MA20', 'MA60'];
+  function updateMALabel(idx) {
+    if (idx == null || idx < 0 || idx >= chartData.length) idx = chartData.length - 1;
+    var legend = document.getElementById('maLegend');
+    var html = '';
+    for (var i = 0; i < MA_KEYS.length; i++) {
+      var k = MA_KEYS[i];
+      var arr = {MA5: ma5, MA10: ma10, MA20: ma20, MA60: ma60}[k];
+      var v = arr[idx];
+      if (v !== null) {
+        html += '<span style="color:' + MA_COLORS[k] + '">' + k + ': ' + fmt(v) + '</span>\n';
+      }
+    }
+    legend.innerHTML = html;
+  }
+  // 初始显示最后一天的MA
+  updateMALabel(chartData.length - 1);
+
+  chart.setOption(option, true);
+
+  // 自适应
+  window.addEventListener('resize', function() { chart.resize(); });
+
+  // 鼠标悬停联动价格栏 + 均线标注
+  chart.on('updateAxisPointer', function(p) {
+    if (p.dataIndex != null && p.dataIndex >= 0 && p.dataIndex < chartData.length) {
+      const d = chartData[p.dataIndex];
+      const prev2 = p.dataIndex > 0 ? chartData[p.dataIndex - 1] : null;
+      const chg2 = prev2 ? ((d.close - prev2.close) / prev2.close * 100) : 0;
+      document.getElementById('priceCurrent').textContent = '¥' + fmt(d.close);
+
+
+      document.getElementById('pdOpen').textContent = fmt(d.open);
+      document.getElementById('pdHigh').textContent = fmt(d.high);
+      document.getElementById('pdLow').textContent = fmt(d.low);
+      document.getElementById('pdClose').textContent = fmt(d.close);
+      document.getElementById('pdVol').textContent = fmtAmount(d.amount || d.volume * (d.close || 1));
+      // 更新均线标注到鼠标位置
+      updateMALabel(p.dataIndex);
+    }
+  });
+}
+
+// ============================================================
+//  股票切换 & 模式切换
+// ============================================================
+document.getElementById('stockSelector').addEventListener('change', function() {
+  currentStock = this.value;
+  renderChart();
+});
+
+document.querySelectorAll('.mode-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    currentMode = this.dataset.mode;
+    renderChart();
+  });
+});
+
+// 启动
+loadData();
+
+// 从 URL 恢复股票选择
+if (stockParam && ["A","B","C"].includes(stockParam)) {
+  currentStock = stockParam;
+  document.getElementById("stockSelector").value = stockParam;
+}
+
+// 更新调试栏游戏日显示
+var dl = document.getElementById('debugDayLabel');
+if (dl) dl.textContent = '游戏日: ' + (currentDay >= 9999 ? '全部' : currentDay);
+
+</script>
+</body>
+</html>
