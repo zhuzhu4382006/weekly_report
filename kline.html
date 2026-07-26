@@ -11,7 +11,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
   background: #111216; color: #e0e2e6;
   max-width: 100%; margin: 0; padding: 0;
-  min-height: 100vh;
+  min-height: 100vh; overscroll-behavior-x: none;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -458,42 +458,22 @@ function renderChart() {
       borderColor: '#2a2d36',
       borderWidth: 1,
       textStyle: { color: '#e0e2e6', fontSize: 12 },
+      position: function() { return { left: 70, top: 34 }; },
+      backgroundColor: 'transparent',
+      borderColor: 'transparent',
+      borderWidth: 0,
+      padding: 0,
+      extraCssText: 'box-shadow:none;',
       formatter: function(params) {
         const p = params;
-        const d = p.find(i => i.seriesName === 'K线');
-        const v = p.find(i => i.seriesName === '成交量');
-        const date = p[0].axisValueLabel || '';
-        const isWeekly = currentMode === 'weekly';
         const idx = p[0].dataIndex;
-        // 涨跌幅
-        var chgStr = '';
         if (idx > 0 && idx < chartData.length) {
           var pc = chartData[idx - 1].close;
           var cc = chartData[idx].close;
           var chg = (cc - pc) / pc * 100;
-          chgStr = ' <span style="color:' + (chg >= 0 ? '#ef5350' : '#26a69a') + ';font-weight:600;">' + (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%</span>';
+          return '<span style="font-size:11px;color:#9aa0a6;margin-right:2px;">涨跌</span><span style="font-size:12px;font-weight:600;color:' + (chg >= 0 ? '#ef5350' : '#26a69a') + ';">' + (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%</span>';
         }
-        let html = '<div style="font-size:13px;font-weight:600;margin-bottom:6px;">' + date + (isWeekly ? ' 周' : '') + chgStr + '</div>';
-        if (d) {
-          var cd = chartData[idx];
-          html += '<div style="display:flex;gap:12px;flex-wrap:wrap;font-size:12px;">';
-          html += '<span>开: <b>' + fmt(cd.open) + '</b></span>';
-          html += '<span>收: <b>' + fmt(cd.close) + '</b></span>';
-          html += '<span>低: <b>' + fmt(cd.low) + '</b></span>';
-          html += '<span>高: <b>' + fmt(cd.high) + '</b></span>';
-          html += '</div>';
-        }
-        if (v) {
-          html += '<div style="font-size:12px;margin-top:2px;">成交额: <b>' + fmtAmount(v.data) + '</b></div>';
-        }
-        // MA values
-        const mas = [];
-        if (ma5[idx] !== null) mas.push('MA5: <b>' + fmt(ma5[idx]) + '</b>');
-        if (ma10[idx] !== null) mas.push('MA10: <b>' + fmt(ma10[idx]) + '</b>');
-        if (ma20[idx] !== null) mas.push('MA20: <b>' + fmt(ma20[idx]) + '</b>');
-        if (ma60[idx] !== null) mas.push('MA60: <b>' + fmt(ma60[idx]) + '</b>');
-        if (mas.length) html += '<div style="font-size:12px;margin-top:2px;">' + mas.join('&nbsp;&nbsp;') + '</div>';
-        return html;
+        return '';
       }
     },
     axisPointer: {
@@ -541,15 +521,26 @@ function renderChart() {
         splitLine: { show: false },
       }
     ],
-    dataZoom: [{
-      type: 'slider',
-      show: false,
-      xAxisIndex: [0, 1],
-      start: zoomStart,
-      end: zoomEnd,
-      minSpan: 2,
-      maxSpan: 100,
-    }],
+    dataZoom: [
+      {
+        type: 'inside',
+        xAxisIndex: [0, 1],
+        start: zoomStart,
+        end: zoomEnd,
+        zoomLock: true,
+        moveOnMouseMove: true,
+        zoomOnMouseWheel: false,
+      },
+      {
+        type: 'slider',
+        show: false,
+        xAxisIndex: [0, 1],
+        start: zoomStart,
+        end: zoomEnd,
+        minSpan: 2,
+        maxSpan: 100,
+      }
+    ],
     series: [
       {
         name: 'K线',
