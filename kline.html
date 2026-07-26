@@ -416,6 +416,17 @@ function renderChart() {
   // 成交量颜色（跟K线一致）
   const volColors = chartData.map(d => d.close >= d.open ? '#ef5350' : '#26a69a');
 
+  // 自适应默认显示K线数量：手机少显示一些
+  var defaultVisibleCount = 125;
+  if (window.innerWidth < 480) {
+    defaultVisibleCount = 35;
+  } else if (window.innerWidth < 768) {
+    defaultVisibleCount = 55;
+  } else if (window.innerWidth < 1024) {
+    defaultVisibleCount = 85;
+  }
+  var dataZoomStart = Math.max(0, 100 - Math.round(defaultVisibleCount / chartData.length * 100));
+
   // ===== ECharts =====
   const dom = document.getElementById('klineChart');
   const chart = echarts.init(dom, 'dark');
@@ -525,7 +536,7 @@ function renderChart() {
         show: true,
         type: 'slider',
         xAxisIndex: [0, 1],
-        start: Math.max(0, 100 - Math.round(125 / chartData.length * 100)),
+        start: dataZoomStart,
         end: 100,
         minSpan: 5,
         height: 14,
