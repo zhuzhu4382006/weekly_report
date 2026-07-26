@@ -706,7 +706,7 @@ function zoomIn() {
   var e = opt.dataZoom[0].end;
   var range = e - s;
   if (range <= 3) return;
-  var newRange = Math.max(3, range - 5);
+  var newRange = Math.max(3, range - 3);
   var newStart = Math.min(s + (range - newRange) / 2, 100 - newRange);
   newStart = Math.round(newStart);
   var newEnd = newStart + newRange;
@@ -723,7 +723,7 @@ function zoomOut() {
   var e = opt.dataZoom[0].end;
   var range = e - s;
   if (range >= 98) return;
-  var newRange = Math.min(98, range + 5);
+  var newRange = Math.min(98, range + 3);
   var newStart = Math.max(0, Math.round(s - (newRange - range) / 2));
   var newEnd = newStart + newRange;
   if (newEnd > 100) { newEnd = 100; newStart = 100 - newRange; }
