@@ -31,6 +31,7 @@ h1 { text-align: center; font-size: 26px; margin-bottom: 4px; }
 .tag-1 { background: #fef2f2; color: #dc2626; }
 .tag-2 { background: #fff7ed; color: #ea580c; }
 .tag-3 { background: #eff6ff; color: #2563eb; }
+.tag-4 { background: #f0fdf4; color: #15803d; }
 .divider { border: none; border-top: 1px solid #e2e8f0; margin: 36px 0 28px; }
 .note {
   background: #f8fafc; border-radius: 10px; padding: 16px 20px;
@@ -64,7 +65,7 @@ h1 { text-align: center; font-size: 26px; margin-bottom: 4px; }
 <p class="subtitle">每周分析报告 · 点击查看详情</p>
 
 <div class="pos-card" id="posCard">
-  <div class="pos-title">📌 持仓分布 <span style="font-weight:400;font-size:12px;color:#64748b;">（截至 7/30）</span></div>
+  <div class="pos-title">📌 持仓分布 <span style="font-weight:400;font-size:12px;color:#64748b;">（截至 8/1）</span></div>
   <div id="posBody"></div>
   <div class="pos-update">✓ 持有 &nbsp;·&nbsp; — 未持仓 &nbsp;·&nbsp; 下次更新：推进游戏后修改下方数据</div>
 </div>
@@ -86,6 +87,17 @@ h1 { text-align: center; font-size: 26px; margin-bottom: 4px; }
     <div class="card-info">
       <h2>截图浏览 <span style="display:inline-block;font-size:11px;padding:1px 8px;border-radius:4px;margin-left:8px;font-weight:500;background:#dbeafe;color:#2563eb;">自动解锁</span></h2>
       <p>三支股票每日K线截图 · 未来日期自动锁定</p>
+    </div>
+  </div>
+  <div class="card-arrow">→</div>
+</a>
+
+<a class="card-link" href="分析报告_第四周.html">
+  <div class="card-left">
+    <div class="card-rank">🥇</div>
+    <div class="card-info">
+      <h2>第四周 <span class="week-tag tag-4">7/25 → 8/1</span></h2>
+      <p>玉衡材料 +28.1% · 摇光转跌 · 玉衡四连涨</p>
     </div>
   </div>
   <div class="card-arrow">→</div>
@@ -133,11 +145,11 @@ h1 { text-align: center; font-size: 26px; margin-bottom: 4px; }
 <script>
 // ⚡ 推进游戏后，修改这里的数据即可更新持仓分布
 const POS_DATA = {
-  date: '7月30日',
+  date: '8月1日',
   players: [
     { name: '受受', A: true, B: true, C: true },
-    { name: '小玉', A: true, B: true, C: false },
-    { name: '蟹蟹', A: true, B: false, C: true },
+    { name: '小玉', A: false, B: true, C: false },
+    { name: '蟹蟹', A: true, B: true, C: true },
     { name: '飞鸟', A: false, B: true, C: true },
     { name: '鹅蛋', A: false, B: false, C: false },
   ]
