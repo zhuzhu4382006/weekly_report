@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>盈亏日历 · 鹅蛋</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+  background:#f3f4f8; color:#1a1a2e; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap { max-width:640px; margin:0 auto; padding:14px 12px 40px; }
+
+.header {
+  background:#fff; border-radius:14px; padding:14px 16px;
+  display:flex; align-items:center; gap:12px;
+  box-shadow:0 1px 3px rgba(0,0,0,.06); margin-bottom:12px;
+}
+.avatar {
+  width:46px; height:46px; border-radius:50%;
+  background:linear-gradient(135deg,#fde8e8,#ffe9d1);
+  display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0;
+}
+.title { font-size:17px; font-weight:700; }
+.subtitle { font-size:12px; color:#8a8fa3; margin-top:2px; }
+
+.lock-notice { text-align:center; padding:10px 14px; border-radius:10px; font-size:13px; margin-bottom:12px; }
+.lock-notice.locked { background:#fff7e6; color:#b26a00; border:1px solid #ffe1a8; }
+.lock-notice.open { background:#e8f7ee; color:#1c7d43; border:1px solid #bfe6cd; }
+
+.card { background:#fff; border-radius:14px; padding:16px; box-shadow:0 1px 3px rgba(0,0,0,.06); margin-bottom:12px; }
+.card-title { font-size:15px; font-weight:700; margin-bottom:12px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.asof { font-size:11px; font-weight:400; color:#8a8fa3; }
+
+.sum-row { display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px dashed #f0f1f5; font-size:14px; gap:12px; }
+.sum-row:last-child { border-bottom:none; }
+.sum-label { color:#6b7080; flex-shrink:0; }
+.sum-val { font-weight:600; text-align:right; }
+.sum-val.up { color:#e74c3c; }
+.sum-val.down { color:#27ae60; }
+.sum-val.big { font-size:17px; font-weight:700; }
+.sum-val.warn { color:#e67e22; }
+
+.hold-title { font-size:13px; font-weight:700; margin:14px 0 8px; color:#4a4f63; }
+.hold-table { width:100%; border-collapse:collapse; font-size:12px; }
+.hold-table th { text-align:left; padding:6px 4px; color:#8a8fa3; font-weight:500; border-bottom:1px solid #eef0f4; white-space:nowrap; }
+.hold-table td { padding:7px 4px; border-bottom:1px solid #f4f5f8; white-space:nowrap; }
+.hold-table .num { text-align:right; }
+.hold-table .up { color:#e74c3c; font-weight:600; }
+.hold-table .down { color:#27ae60; font-weight:600; }
+.lock-line {
+  background:#f8f9fb; border:1px dashed #dde1e8; border-radius:8px;
+  padding:12px; text-align:center; color:#8a8fa3; font-size:13px;
+}
+
+.month-label { font-size:14px; font-weight:700; margin:4px 0 6px; }
+.grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+.dow { font-size:10px; color:#aab0c0; text-align:center; padding:3px 0; }
+.cell { border-radius:6px; padding:3px 0 4px; min-height:44px; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.cell.pos { background:rgba(231,76,60,.08); }
+.cell.neg { background:rgba(39,174,96,.08); }
+.cell.none { background:#fafafa; }
+.cd { font-size:10px; color:#888; line-height:1.2; }
+.cp { font-size:13px; font-weight:700; line-height:1.3; }
+.cell.pos .cp { color:#e74c3c; }
+.cell.neg .cp { color:#27ae60; }
+.cell.none .cd { color:#e2e2e8; }
+
+.stats { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-top:14px; padding:10px 6px; background:#f8f9fa; border-radius:10px; }
+.stat { text-align:center; }
+.stat-label { font-size:10px; color:#999; }
+.stat-val { font-size:13px; font-weight:700; }
+.stat-val.up { color:#e74c3c; }
+.stat-val.down { color:#27ae60; }
+
+.footer { text-align:center; font-size:11px; color:#aab0c0; margin-top:20px; line-height:1.8; }
+.footer a { color:#6a7fae; text-decoration:none; }
+
+@media (max-width:600px) {
+  .wrap { padding:10px 8px 32px; }
+  .hold-table { font-size:11px; }
+  .cell { min-height:40px; }
+  .cp { font-size:12px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="avatar">👤</div>
+    <div>
+      <div class="title">📅 鹅蛋 · 盈亏日历</div>
+      <div class="subtitle">模拟炒股 · 仅本人可见 · 每日 9:00 解锁最新</div>
+    </div>
+  </div>
+
+  <div class="lock-notice" id="lockNotice"></div>
+  <div class="card" id="summaryCard"></div>
+  <div class="card" id="calendarCard"></div>
+
+  <div class="footer">模拟炒股 · 数据来自游戏每日快照<br>有问题请联系组织者</div>
+</div>
+
+<script>
+const P = {"name":"鹅蛋","latestDate":"2026-08-07","days":[{"d":"2026-07-05","p":79.27,"nw":100076.7},{"d":"2026-07-06","p":534.0,"nw":100610.7},{"d":"2026-07-07","p":-1326.41,"nw":99284.29},{"d":"2026-07-08","p":-168.0,"nw":99116.29},{"d":"2026-07-09","p":-606.0,"nw":98510.29},{"d":"2026-07-10","p":295.54,"nw":98805.83},{"d":"2026-07-11","p":-947.66,"nw":97858.17},{"d":"2026-07-12","p":-133.23,"nw":97724.94},{"d":"2026-07-13","p":-358.0,"nw":97366.94},{"d":"2026-07-14","p":-348.0,"nw":97018.94},{"d":"2026-07-15","p":754.99,"nw":97773.93},{"d":"2026-07-16","p":4561.63,"nw":102335.56},{"d":"2026-07-17","p":-0.0,"nw":132335.56},{"d":"2026-07-18","p":0.0,"nw":132335.56},{"d":"2026-07-19","p":0.0,"nw":132335.56},{"d":"2026-07-20","p":0.0,"nw":132335.56},{"d":"2026-07-21","p":0.0,"nw":132335.56},{"d":"2026-07-22","p":0.0,"nw":132335.56},{"d":"2026-07-23","p":0.0,"nw":132335.56},{"d":"2026-07-24","p":0.0,"nw":132335.56},{"d":"2026-07-25","p":-1.04,"nw":132334.52},{"d":"2026-07-26","p":77.22,"nw":132411.74},{"d":"2026-07-27","p":231.22,"nw":132642.96},{"d":"2026-07-28","p":418.64,"nw":133061.6},{"d":"2026-07-29","p":-968.0,"nw":162093.6},{"d":"2026-07-30","p":-467.51,"nw":161626.09},{"d":"2026-07-31","p":0.0,"nw":161626.09},{"d":"2026-08-01","p":0.0,"nw":161626.09},{"d":"2026-08-02","p":0.0,"nw":161626.09},{"d":"2026-08-03","p":-1.41,"nw":161624.68},{"d":"2026-08-04","p":-305.0,"nw":161319.68},{"d":"2026-08-05","p":163.65,"nw":161483.33},{"d":"2026-08-06","p":-334.0,"nw":161149.33},{"d":"2026-08-07","p":1012.0,"nw":162161.33}],"accounts":{"2026-07-04":{"c":76647.43,"sv":23350,"md":0,"nw":99997.43},"2026-07-05":{"c":69974.7,"sv":30102,"md":0,"nw":100076.7},"2026-07-06":{"c":69974.7,"sv":30636,"md":0,"nw":100610.7},"2026-07-07":{"c":66274.29,"sv":33010,"md":0,"nw":99284.29},"2026-07-08":{"c":66274.29,"sv":32842,"md":0,"nw":99116.29},"2026-07-09":{"c":66274.29,"sv":32236,"md":0,"nw":98510.29},"2026-07-10":{"c":76865.83,"sv":21940,"md":0,"nw":98805.83},"2026-07-11":{"c":75948.17,"sv":21910,"md":0,"nw":97858.17},"2026-07-12":{"c":73862.94,"sv":23862,"md":0,"nw":97724.94},"2026-07-13":{"c":73862.94,"sv":23504,"md":0,"nw":97366.94},"2026-07-14":{"c":73862.94,"sv":23156,"md":0,"nw":97018.94},"2026-07-15":{"c":82077.93,"sv":15696,"md":0,"nw":97773.93},"2026-07-16":{"c":102335.56,"sv":0,"md":0,"nw":102335.56},"2026-07-17":{"c":132335.56,"sv":0,"md":0,"nw":132335.56},"2026-07-18":{"c":132335.56,"sv":0,"md":0,"nw":132335.56},"2026-07-19":{"c":132335.56,"sv":0,"md":0,"nw":132335.56},"2026-07-20":{"c":132335.56,"sv":0,"md":0,"nw":132335.56},"2026-07-21":{"c":132335.56,"sv":0,"md":0,"nw":132335.56},"2026-07-22":{"c":132335.56,"sv":0,"md":0,"nw":132335.56},"2026-07-23":{"c":132335.56,"sv":0,"md":0,"nw":132335.56},"2026-07-24":{"c":132335.56,"sv":0,"md":0,"nw":132335.56},"2026-07-25":{"c":122878.52,"sv":9456,"md":0,"nw":132334.52},"2026-07-26":{"c":115869.74,"sv":16542,"md":0,"nw":132411.74},"2026-07-27":{"c":108762.96,"sv":23880.0,"md":0,"nw":132642.96},"2026-07-28":{"c":96387.6,"sv":36674,"md":0,"nw":133061.6},"2026-07-29":{"c":126387.6,"sv":35706,"md":0,"nw":162093.6},"2026-07-30":{"c":161626.09,"sv":0,"md":0,"nw":161626.09},"2026-07-31":{"c":161626.09,"sv":0,"md":0,"nw":161626.09},"2026-08-01":{"c":161626.09,"sv":0,"md":0,"nw":161626.09},"2026-08-02":{"c":161626.09,"sv":0,"md":0,"nw":161626.09},"2026-08-03":{"c":148814.68,"sv":12810,"md":0,"nw":161624.68},"2026-08-04":{"c":148814.68,"sv":12505,"md":0,"nw":161319.68},"2026-08-05":{"c":136532.33,"sv":24951,"md":0,"nw":161483.33},"2026-08-06":{"c":136532.33,"sv":24617,"md":0,"nw":161149.33},"2026-08-07":{"c":136532.33,"sv":25629,"md":0,"nw":162161.33}},"invested":{"2026-07-04":100000,"2026-07-05":100000,"2026-07-06":100000,"2026-07-07":100000,"2026-07-08":100000,"2026-07-09":100000,"2026-07-10":100000,"2026-07-11":100000,"2026-07-12":100000,"2026-07-13":100000,"2026-07-14":100000,"2026-07-15":100000,"2026-07-16":100000,"2026-07-17":130000,"2026-07-18":130000,"2026-07-19":130000,"2026-07-20":130000,"2026-07-21":130000,"2026-07-22":130000,"2026-07-23":130000,"2026-07-24":130000,"2026-07-25":130000,"2026-07-26":130000,"2026-07-27":130000,"2026-07-28":130000,"2026-07-29":160000,"2026-07-30":160000,"2026-07-31":160000,"2026-08-01":160000,"2026-08-02":160000,"2026-08-03":160000,"2026-08-04":160000,"2026-08-05":160000,"2026-08-06":160000,"2026-08-07":160000},"latest":{"holdings":[{"name":"天枢能源","shares":500,"avg":4.29,"price":4.26,"mv":2130.0,"pct":1.31,"up":-15.0,"cum":617.0,"rpct":-0.7},{"name":"摇光电子","shares":900,"avg":25.4956,"price":26.11,"mv":23499.0,"pct":14.49,"up":553.0,"cum":952.0,"rpct":2.41}],"date":"2026-08-07"}};
+
+// ---------- 工具 ----------
+function pad(n){ return n < 10 ? '0' + n : '' + n; }
+function fmtMoney(n){
+  n = Number(n) || 0;
+  return '¥' + n.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function fmtSigned(n){
+  n = Number(n) || 0;
+  return (n >= 0 ? '+' : '-') + fmtMoney(Math.abs(n));
+}
+function fmtCN(dateStr){
+  var a = dateStr.split('-');
+  return parseInt(a[1],10) + '月' + parseInt(a[2],10) + '日';
+}
+
+// ---------- 解锁判定(与 K线页一致:9 点前算昨天) ----------
+function getResolvedDate(){
+  var now = new Date();
+  if (now.getHours() < 9) now.setDate(now.getDate() - 1);
+  var s = now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate());
+  if (s > P.latestDate) s = P.latestDate;
+  return s;
+}
+
+// 组织者预览:网址加 #preview,或 Ctrl+Shift+K
+var PREVIEW = window.location.hash.indexOf('preview') >= 0;
+document.addEventListener('keydown', function(e){
+  if (e.ctrlKey && e.shiftKey && (e.key === 'K' || e.key === 'k')){
+    e.preventDefault();
+    PREVIEW = true;
+    render();
+  }
+});
+
+// ---------- 渲染 ----------
+function getAcc(dateStr){
+  if (P.accounts[dateStr]) return P.accounts[dateStr];
+  var keys = Object.keys(P.accounts).sort();
+  for (var i = keys.length - 1; i >= 0; i--) if (keys[i] <= dateStr) return P.accounts[keys[i]];
+  return P.accounts[keys[0]] || {};
+}
+function getInvested(dateStr){
+  if (P.invested[dateStr] != null) return P.invested[dateStr];
+  var keys = Object.keys(P.invested).sort();
+  for (var i = keys.length - 1; i >= 0; i--) if (keys[i] <= dateStr) return P.invested[keys[i]];
+  return 100000;
+}
+
+function renderNotice(locked, resolved){
+  var el = document.getElementById('lockNotice');
+  if (locked){
+    el.className = 'lock-notice locked';
+    el.innerHTML = '🔒 已锁定:只显示到 <strong>' + fmtCN(resolved) + '</strong> · 最新(' + fmtCN(P.latestDate) + ')数据 <strong>9:00</strong> 解锁';
+  } else {
+    el.className = 'lock-notice open';
+    el.innerHTML = '✅ 全部数据已解锁 · 截至 ' + fmtCN(P.latestDate);
+  }
+}
+
+function renderSummary(resolved, locked){
+  var acc = getAcc(resolved);
+  var invested = getInvested(resolved);
+  var nw = acc.nw, cash = acc.c, sv = acc.sv, md = acc.md || 0;
+  var pl = nw - invested;
+  var rpct = invested > 0 ? pl / invested * 100 : 0;
+  var posPct = nw > 0 ? sv / nw * 100 : 0;
+  var posCls = pl >= 0 ? 'up' : 'down';
+
+  var html = '<div class="card-title">📊 账户摘要 <span class="asof">截至 ' + fmtCN(resolved) + '</span></div>';
+  html += '<div class="sum-row"><span class="sum-label">💎 净资产</span><span class="sum-val big">' + fmtMoney(nw) + '</span></div>';
+  html += '<div class="sum-row"><span class="sum-label">🏦 现金</span><span class="sum-val">' + fmtMoney(cash) + '</span></div>';
+  html += '<div class="sum-row"><span class="sum-label">📈 持仓市值</span><span class="sum-val">' + fmtMoney(sv) + '</span></div>';
+  if (md > 0) html += '<div class="sum-row"><span class="sum-label">🔻 融资负债</span><span class="sum-val warn">' + fmtMoney(md) + '</span></div>';
+  html += '<div class="sum-row"><span class="sum-label">🎯 仓位占比</span><span class="sum-val">' + posPct.toFixed(1) + '% 持股 / ' + (100 - posPct).toFixed(1) + '% 现金</span></div>';
+  html += '<div class="sum-row"><span class="sum-label">📥 累计投入</span><span class="sum-val">' + fmtMoney(invested) + '</span></div>';
+  html += '<div class="sum-row"><span class="sum-label">📊 总盈亏</span><span class="sum-val ' + posCls + '">' + fmtSigned(pl) + ' <span style="font-weight:400;font-size:12px;">(' + (rpct >= 0 ? '+' : '') + rpct.toFixed(2) + '%)</span></span></div>';
+
+  html += '<div class="hold-title">🧾 持仓明细</div>';
+  var open = !locked && resolved === P.latestDate;
+  if (open){
+    var hs = P.latest.holdings;
+    if (hs.length){
+      html += '<table class="hold-table"><thead><tr><th>股票</th><th class="num">股数</th><th class="num">均价</th><th class="num">现价</th><th class="num">市值</th><th class="num">仓位</th><th class="num">浮动盈亏</th><th class="num">累计盈亏</th></tr></thead><tbody>';
+      for (var i = 0; i < hs.length; i++){
+        var h = hs[i];
+        html += '<tr><td>' + h.name + '</td><td class="num">' + h.shares.toLocaleString() + '</td><td class="num">' + h.avg.toFixed(3) + '</td><td class="num">' + h.price.toFixed(3) + '</td><td class="num">' + fmtMoney(h.mv) + '</td><td class="num">' + h.pct.toFixed(1) + '%</td><td class="num ' + (h.up >= 0 ? 'up' : 'down') + '">' + fmtSigned(h.up) + '</td><td class="num ' + (h.cum >= 0 ? 'up' : 'down') + '">' + fmtSigned(h.cum) + '</td></tr>';
+      }
+      html += '</tbody></table>';
+    } else {
+      html += '<div class="lock-line">(空仓)</div>';
+    }
+  } else {
+    html += '<div class="lock-line">🔒 今日持仓明细 9:00 解锁</div>';
+  }
+
+  document.getElementById('summaryCard').innerHTML = html;
+}
+
+function renderCalendar(resolved){
+  var days = [];
+  for (var i = 0; i < P.days.length; i++) if (P.days[i].d <= resolved) days.push(P.days[i]);
+
+  var monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  var byMonth = {};
+  for (var j = 0; j < days.length; j++){
+    var mk = days[j].d.substring(0, 7);
+    (byMonth[mk] = byMonth[mk] || []).push(days[j]);
+  }
+
+  var html = '<div class="card-title">📅 每日盈亏 <span class="asof">红赚 · 绿亏</span></div>';
+  var mkeys = Object.keys(byMonth).sort().reverse();
+  for (var k = 0; k < mkeys.length; k++){
+    var mk2 = mkeys[k];
+    var y = parseInt(mk2.split('-')[0], 10), m = parseInt(mk2.split('-')[1], 10) - 1;
+    var label = y + '年 ' + monthNames[m];
+    var firstDow = new Date(y, m, 1).getDay();
+    var dim = new Date(y, m + 1, 0).getDate();
+    var mdays = byMonth[mk2];
+
+    html += '<div class="month"><div class="month-label">' + label + '</div><div class="grid">';
+    var dows = ['日','一','二','三','四','五','六'];
+    for (var w = 0; w < 7; w++) html += '<div class="dow">' + dows[w] + '</div>';
+    for (var b = 0; b < firstDow; b++) html += '<div class="cell none"></div>';
+    for (var day = 1; day <= dim; day++){
+      var ds = mk2 + '-' + pad(day);
+      var dd = null;
+      for (var x = 0; x < mdays.length; x++) if (mdays[x].d === ds) { dd = mdays[x]; break; }
+      if (dd){
+        var pos = dd.p >= 0;
+        html += '<div class="cell ' + (pos ? 'pos' : 'neg') + '"><div class="cd">' + day + '</div><div class="cp">' + (pos ? '+' : '') + dd.p.toFixed(0) + '</div></div>';
+      } else {
+        html += '<div class="cell none"><div class="cd">' + day + '</div></div>';
+      }
+    }
+    html += '</div></div>';
+  }
+
+  var total = 0, posDays = 0, negDays = 0;
+  for (var s = 0; s < days.length; s++){
+    total += days[s].p;
+    if (days[s].p > 0) posDays++; else if (days[s].p < 0) negDays++;
+  }
+  var avg = days.length ? total / days.length : 0;
+  var tcls = total >= 0 ? 'up' : 'down', acls = avg >= 0 ? 'up' : 'down';
+  html += '<div class="stats">';
+  html += '<div class="stat"><div class="stat-label">总盈亏</div><div class="stat-val ' + tcls + '">' + (total >= 0 ? '+' : '') + total.toFixed(0) + '</div></div>';
+  html += '<div class="stat"><div class="stat-label">盈利天数</div><div class="stat-val up">' + posDays + '</div></div>';
+  html += '<div class="stat"><div class="stat-label">亏损天数</div><div class="stat-val down">' + negDays + '</div></div>';
+  html += '<div class="stat"><div class="stat-label">日均</div><div class="stat-val ' + acls + '">' + (avg >= 0 ? '+' : '') + avg.toFixed(0) + '</div></div>';
+  html += '</div>';
+
+  document.getElementById('calendarCard').innerHTML = html;
+}
+
+function render(){
+  var resolved = PREVIEW ? P.latestDate : getResolvedDate();
+  var locked = resolved < P.latestDate;
+  renderNotice(locked, resolved);
+  renderSummary(resolved, locked);
+  renderCalendar(resolved);
+}
+
+render();
+</script>
+</body>
+</html>
