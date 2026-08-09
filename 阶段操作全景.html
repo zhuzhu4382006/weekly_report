@@ -7,7 +7,7 @@
     .card-head { border-bottom:3px solid #1f2a44; padding-bottom:16px; margin-bottom:16px; }
     .title { font-size:30px; font-weight:800; color:#1f2a44; }
     .sub { font-size:14px; color:#6b7280; margin-top:6px; }
-    .lock-notice { display:flex; align-items:center; gap:8px; margin-bottom:14px; padding:10px 14px; border-radius:10px; font-size:13px; }
+    .lock-notice { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:14px; padding:10px 14px; border-radius:10px; font-size:13px; overflow-wrap:anywhere; }
     .lock-notice.locked { background:#fff7e6; color:#b26a00; border:1px solid #ffe1a8; }
     .lock-notice.open { background:#e8f7ee; color:#1c7d43; border:1px solid #bfe6cd; }
     .strip { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:18px; }
@@ -24,7 +24,7 @@
     .day { background:#fbfcfe; }
     .day-date { font-size:19px; font-weight:800; color:#1f2a44; }
     .day-num { font-size:12px; color:#9aa1ad; margin-bottom:6px; }
-    .prices { font-size:12px; line-height:1.8; color:#374151; }
+    .prices { font-size:12px; line-height:1.8; color:#374151; overflow-wrap:anywhere; }
     .px-name { color:#6b7280; }
     .up { color:#d93025; }
     .down { color:#188038; }
@@ -32,11 +32,32 @@
     .player.empty { color:#c3c9d2; text-align:center; }
     .op-block { margin-bottom:8px; }
     .op-block:last-child { margin-bottom:0; }
-    .op { display:inline-block; font-size:13px; font-weight:700; border-radius:6px; padding:2px 8px; }
+    .op { display:inline-block; font-size:13px; font-weight:700; border-radius:6px; padding:2px 8px; overflow-wrap:anywhere; }
     .op.buy { background:#fde8e8; color:#c62828; }
     .op.sell { background:#e6f4ea; color:#1e7d34; }
-    .op-hold { font-size:11px; color:#6b7280; margin-top:3px; }
+    .op-hold { font-size:11px; color:#6b7280; margin-top:3px; overflow-wrap:anywhere; }
     .foot { margin-top:16px; font-size:12px; color:#9aa1ad; border-top:1px solid #eef1f5; padding-top:12px; }
+    #gridMobile { display:none; }
+    .mday { border:1px solid #e5e7eb; border-radius:12px; padding:12px; margin-bottom:12px; background:#fbfcfe; }
+    .mday-head { border-bottom:1px solid #eef1f5; padding-bottom:8px; margin-bottom:6px; }
+    .mday-date { font-size:17px; font-weight:800; color:#1f2a44; }
+    .mday-num { font-size:11px; color:#9aa1ad; margin-bottom:5px; }
+    .mday-prices { font-size:12px; line-height:1.7; color:#374151; overflow-wrap:anywhere; }
+    .mplayer { display:flex; gap:8px; padding:7px 0; border-bottom:1px dashed #eef1f5; }
+    .mplayer:last-child { border-bottom:none; }
+    .mplayer-name { flex:0 0 60px; font-weight:700; font-size:14px; padding-top:2px; color:#1f2a44; }
+    .mplayer-ops { flex:1; min-width:0; }
+    .mplayer-ops .op-block { margin-bottom:5px; }
+    .mplayer-ops .op-block:last-child { margin-bottom:0; }
+    @media (max-width:820px) {
+      .card { padding:16px 12px; }
+      .title { font-size:22px; }
+      .sub { font-size:12px; }
+      .strip { grid-template-columns:1fr; gap:8px; }
+      .strip-price { font-size:16px; }
+      #gridDesktop { display:none; }
+      #gridMobile { display:block; }
+    }
     </style></head>
 <body>
 <div class="card">
@@ -46,7 +67,8 @@
   </div>
   <div class="lock-notice" id="lockNotice"></div>
   <div class="strip" id="strip"></div>
-  <div class="table-wrap"><div class="grid-wrap" id="grid"></div></div>
+  <div class="table-wrap"><div class="grid-wrap" id="gridDesktop"></div></div>
+  <div id="gridMobile"></div>
   <div class="foot">红涨绿跌 · 买入红标 / 卖出绿标 · 持仓为操作前持仓，仅显示有无不显示数量 · 最新数据每日 9:00 解锁</div>
 </div>
 <script>
@@ -156,7 +178,36 @@ function renderGrid(resolved, locked){
     }
     html += '</div>';
   }
-  document.getElementById('grid').innerHTML = html;
+  document.getElementById('gridDesktop').innerHTML = html;
+
+  var mhtml = '';
+  for (var i = 0; i < vdays.length; i++){
+    var d = vdays[i];
+    var opsToday = vops.filter(function(o){ return o.day === d.day; });
+    if (!opsToday.length) continue;
+    var priceParts = [];
+    for (var sid of ['A','B','C']){
+      var px = d.prices[sid];
+      var cls = px.c >= 0 ? 'up' : 'down';
+      var arrow = px.c >= 0 ? '▲' : '▼';
+      priceParts.push(({A:'天枢能源',B:'玉衡材料',C:'摇光电子'}[sid]) + ' ' + fmt(px.p) + ' <span class="' + cls + '">' + arrow + ' ' + fmtPct(px.c) + '</span>');
+    }
+    mhtml += '<div class="mday">';
+    mhtml += '<div class="mday-head"><div class="mday-date">' + d.label + ' <span class="mday-num">第' + d.day + '日</span></div><div class="mday-prices">' + priceParts.join(' · ') + '</div></div>';
+    for (var p of P.players){
+      var ops = opsToday.filter(function(o){ return o.name === p; });
+      if (!ops.length) continue;
+      var blocks = '';
+      for (var t of ops){
+        var cls2 = t.type === 'buy' ? 'buy' : 'sell';
+        var label = t.type === 'buy' ? '买入' : (t.is_clear ? '卖出（清仓）' : '卖出');
+        blocks += '<div class="op-block"><div class="op ' + cls2 + '">' + label + ' ' + t.stock + '</div><div class="op-hold">持：' + (t.held.length ? t.held.join(' · ') : '空仓') + '</div></div>';
+      }
+      mhtml += '<div class="mplayer"><div class="mplayer-name">' + p + '</div><div class="mplayer-ops">' + blocks + '</div></div>';
+    }
+    mhtml += '</div>';
+  }
+  document.getElementById('gridMobile').innerHTML = mhtml;
 }
 
 function render(){
