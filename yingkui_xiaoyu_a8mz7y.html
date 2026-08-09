@@ -58,6 +58,26 @@ body {
   padding:12px; text-align:center; color:#8a8fa3; font-size:13px;
 }
 
+.phase-row { display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px dashed #f0f1f5; gap:10px; }
+.phase-row:last-child { border-bottom:none; }
+.phase-info { min-width:0; }
+.phase-name { font-size:14px; font-weight:700; }
+.phase-range { font-size:11px; color:#8a8fa3; display:block; margin-top:1px; }
+.phase-right { text-align:right; flex-shrink:0; }
+.phase-rate { font-size:16px; font-weight:700; }
+.phase-rate.up { color:#e74c3c; }
+.phase-rate.down { color:#27ae60; }
+.phase-sub { font-size:11px; color:#8a8fa3; margin-top:1px; }
+
+.pstats { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+.pstat { background:#f8f9fb; border-radius:10px; padding:10px 12px; min-width:0; }
+.pstat-label { font-size:11px; color:#8a8fa3; margin-bottom:3px; }
+.pstat-val { font-size:14px; font-weight:700; word-break:break-all; }
+.pstat-val.up { color:#e74c3c; }
+.pstat-val.down { color:#27ae60; }
+.pstat-sub { font-size:11px; color:#8a8fa3; margin-top:2px; }
+.pstat .lock-line { margin-top:4px; }
+
 .month-label { font-size:14px; font-weight:700; margin:4px 0 6px; }
 .grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
 .dow { font-size:10px; color:#aab0c0; text-align:center; padding:3px 0; }
@@ -85,6 +105,7 @@ body {
   .wrap { padding:10px 8px 32px; }
   .cell { min-height:40px; }
   .cp { font-size:12px; }
+  .pstats { grid-template-columns:1fr; }
 }
 </style>
 </head>
@@ -101,13 +122,15 @@ body {
 
   <div class="lock-notice" id="lockNotice"></div>
   <div class="card" id="summaryCard"></div>
+  <div class="card" id="phaseCard"></div>
+  <div class="card" id="statsCard"></div>
   <div class="card" id="calendarCard"></div>
 
   <div class="footer">模拟炒股 · 数据来自游戏每日快照<br>有问题请联系组织者</div>
 </div>
 
 <script>
-const P = {"name":"小玉","latestDate":"2026-08-10","days":[{"d":"2026-07-05","p":-4.41,"nw":99995.59},{"d":"2026-07-06","p":630.0,"nw":100625.59},{"d":"2026-07-07","p":-1712.18,"nw":98913.41},{"d":"2026-07-08","p":164.22,"nw":99077.63},{"d":"2026-07-09","p":-982.17,"nw":98095.46},{"d":"2026-07-10","p":1207.28,"nw":99302.74},{"d":"2026-07-11","p":-1318.2,"nw":97984.54},{"d":"2026-07-12","p":-51.0,"nw":97933.54},{"d":"2026-07-13","p":-607.0,"nw":97326.54},{"d":"2026-07-14","p":-1582.0,"nw":95744.54},{"d":"2026-07-15","p":519.0,"nw":96263.54},{"d":"2026-07-16","p":12564.24,"nw":108827.78},{"d":"2026-07-17","p":0.0,"nw":138827.78},{"d":"2026-07-18","p":0.0,"nw":138827.78},{"d":"2026-07-19","p":0.0,"nw":138827.78},{"d":"2026-07-20","p":0.0,"nw":138827.78},{"d":"2026-07-21","p":-6.45,"nw":138821.33},{"d":"2026-07-22","p":-1000.0,"nw":137821.33},{"d":"2026-07-23","p":-800.0,"nw":137021.33},{"d":"2026-07-24","p":300.0,"nw":137321.33},{"d":"2026-07-25","p":4800.0,"nw":142121.33},{"d":"2026-07-26","p":-1222.37,"nw":140898.96},{"d":"2026-07-27","p":1889.53,"nw":142788.49},{"d":"2026-07-28","p":3400.0,"nw":146188.49},{"d":"2026-07-29","p":-1494.83,"nw":174693.66},{"d":"2026-07-30","p":-8.36,"nw":174685.3},{"d":"2026-07-31","p":4634.63,"nw":179319.93},{"d":"2026-08-01","p":7490.33,"nw":186810.26},{"d":"2026-08-02","p":7109.24,"nw":193919.5},{"d":"2026-08-03","p":6419.03,"nw":200338.53},{"d":"2026-08-04","p":8180.0,"nw":208518.53},{"d":"2026-08-05","p":-2739.67,"nw":205778.86},{"d":"2026-08-06","p":-40.0,"nw":205738.86},{"d":"2026-08-07","p":-20.0,"nw":205718.86},{"d":"2026-08-08","p":-260.0,"nw":205458.86},{"d":"2026-08-09","p":-20.91,"nw":205437.95},{"d":"2026-08-10","p":-1640.0,"nw":203797.95}],"accounts":{"2026-07-04":{"c":100000,"sv":0,"md":0,"nw":100000},"2026-07-05":{"c":59885.59,"sv":40110,"md":0,"nw":99995.59},"2026-07-06":{"c":59885.59,"sv":40740,"md":0,"nw":100625.59},"2026-07-07":{"c":40021.41,"sv":58892,"md":0,"nw":98913.41},"2026-07-08":{"c":51121.63,"sv":47956,"md":0,"nw":99077.63},"2026-07-09":{"c":31355.46,"sv":66740,"md":0,"nw":98095.46},"2026-07-10":{"c":68586.74,"sv":30716,"md":0,"nw":99302.74},"2026-07-11":{"c":48603.54,"sv":49381,"md":0,"nw":97984.54},"2026-07-12":{"c":48603.54,"sv":49330,"md":0,"nw":97933.54},"2026-07-13":{"c":48603.54,"sv":48723,"md":0,"nw":97326.54},"2026-07-14":{"c":48603.54,"sv":47141,"md":0,"nw":95744.54},"2026-07-15":{"c":48603.54,"sv":47660,"md":0,"nw":96263.54},"2026-07-16":{"c":108827.78,"sv":0,"md":0,"nw":108827.78},"2026-07-17":{"c":138827.78,"sv":0,"md":0,"nw":138827.78},"2026-07-18":{"c":138827.78,"sv":0,"md":0,"nw":138827.78},"2026-07-19":{"c":138827.78,"sv":0,"md":0,"nw":138827.78},"2026-07-20":{"c":138827.78,"sv":0,"md":0,"nw":138827.78},"2026-07-21":{"c":80221.33,"sv":58600,"md":0,"nw":138821.33},"2026-07-22":{"c":80221.33,"sv":57600,"md":0,"nw":137821.33},"2026-07-23":{"c":80221.33,"sv":56800,"md":0,"nw":137021.33},"2026-07-24":{"c":80221.33,"sv":57100,"md":0,"nw":137321.33},"2026-07-25":{"c":80221.33,"sv":61900,"md":0,"nw":142121.33},"2026-07-26":{"c":75508.96,"sv":65390,"md":0,"nw":140898.96},"2026-07-27":{"c":71238.49,"sv":71550,"md":0,"nw":142788.49},"2026-07-28":{"c":71238.49,"sv":74950,"md":0,"nw":146188.49},"2026-07-29":{"c":174693.66,"sv":0,"md":0,"nw":174693.66},"2026-07-30":{"c":98725.3,"sv":75960,"md":0,"nw":174685.3},"2026-07-31":{"c":107519.93,"sv":71800,"md":0,"nw":179319.93},"2026-08-01":{"c":123370.26,"sv":63440,"md":0,"nw":186810.26},"2026-08-02":{"c":140999.5,"sv":52920,"md":0,"nw":193919.5},"2026-08-03":{"c":132198.53,"sv":68140,"md":0,"nw":200338.53},"2026-08-04":{"c":132198.53,"sv":76320,"md":0,"nw":208518.53},"2026-08-05":{"c":197198.86,"sv":8580,"md":0,"nw":205778.86},"2026-08-06":{"c":197198.86,"sv":8540,"md":0,"nw":205738.86},"2026-08-07":{"c":197198.86,"sv":8520,"md":0,"nw":205718.86},"2026-08-08":{"c":197198.86,"sv":8260,"md":0,"nw":205458.86},"2026-08-09":{"c":188957.95,"sv":16480,"md":0,"nw":205437.95},"2026-08-10":{"c":188957.95,"sv":14840,"md":0,"nw":203797.95}},"invested":{"2026-07-04":100000,"2026-07-05":100000,"2026-07-06":100000,"2026-07-07":100000,"2026-07-08":100000,"2026-07-09":100000,"2026-07-10":100000,"2026-07-11":100000,"2026-07-12":100000,"2026-07-13":100000,"2026-07-14":100000,"2026-07-15":100000,"2026-07-16":100000,"2026-07-17":130000,"2026-07-18":130000,"2026-07-19":130000,"2026-07-20":130000,"2026-07-21":130000,"2026-07-22":130000,"2026-07-23":130000,"2026-07-24":130000,"2026-07-25":130000,"2026-07-26":130000,"2026-07-27":130000,"2026-07-28":130000,"2026-07-29":160000,"2026-07-30":160000,"2026-07-31":160000,"2026-08-01":160000,"2026-08-02":160000,"2026-08-03":160000,"2026-08-04":160000,"2026-08-05":160000,"2026-08-06":160000,"2026-08-07":160000,"2026-08-08":160000,"2026-08-09":160000,"2026-08-10":160000},"latest":{"holdings":[{"name":"天枢能源","shares":4000,"avg":4.26,"price":3.71,"mv":14840.0,"pct":7.28,"up":-2200.0,"cum":2297.0,"rpct":-12.91}],"date":"2026-08-10"}};
+const P = {"name":"小玉","latestDate":"2026-08-10","days":[{"d":"2026-07-05","p":-4.41,"nw":99995.59},{"d":"2026-07-06","p":630.0,"nw":100625.59},{"d":"2026-07-07","p":-1712.18,"nw":98913.41},{"d":"2026-07-08","p":164.22,"nw":99077.63},{"d":"2026-07-09","p":-982.17,"nw":98095.46},{"d":"2026-07-10","p":1207.28,"nw":99302.74},{"d":"2026-07-11","p":-1318.2,"nw":97984.54},{"d":"2026-07-12","p":-51.0,"nw":97933.54},{"d":"2026-07-13","p":-607.0,"nw":97326.54},{"d":"2026-07-14","p":-1582.0,"nw":95744.54},{"d":"2026-07-15","p":519.0,"nw":96263.54},{"d":"2026-07-16","p":12564.24,"nw":108827.78},{"d":"2026-07-17","p":0.0,"nw":138827.78},{"d":"2026-07-18","p":0.0,"nw":138827.78},{"d":"2026-07-19","p":0.0,"nw":138827.78},{"d":"2026-07-20","p":0.0,"nw":138827.78},{"d":"2026-07-21","p":-6.45,"nw":138821.33},{"d":"2026-07-22","p":-1000.0,"nw":137821.33},{"d":"2026-07-23","p":-800.0,"nw":137021.33},{"d":"2026-07-24","p":300.0,"nw":137321.33},{"d":"2026-07-25","p":4800.0,"nw":142121.33},{"d":"2026-07-26","p":-1222.37,"nw":140898.96},{"d":"2026-07-27","p":1889.53,"nw":142788.49},{"d":"2026-07-28","p":3400.0,"nw":146188.49},{"d":"2026-07-29","p":-1494.83,"nw":174693.66},{"d":"2026-07-30","p":-8.36,"nw":174685.3},{"d":"2026-07-31","p":4634.63,"nw":179319.93},{"d":"2026-08-01","p":7490.33,"nw":186810.26},{"d":"2026-08-02","p":7109.24,"nw":193919.5},{"d":"2026-08-03","p":6419.03,"nw":200338.53},{"d":"2026-08-04","p":8180.0,"nw":208518.53},{"d":"2026-08-05","p":-2739.67,"nw":205778.86},{"d":"2026-08-06","p":-40.0,"nw":205738.86},{"d":"2026-08-07","p":-20.0,"nw":205718.86},{"d":"2026-08-08","p":-260.0,"nw":205458.86},{"d":"2026-08-09","p":-20.91,"nw":205437.95},{"d":"2026-08-10","p":-1640.0,"nw":203797.95}],"accounts":{"2026-07-04":{"c":100000,"sv":0,"md":0,"nw":100000},"2026-07-05":{"c":59885.59,"sv":40110,"md":0,"nw":99995.59},"2026-07-06":{"c":59885.59,"sv":40740,"md":0,"nw":100625.59},"2026-07-07":{"c":40021.41,"sv":58892,"md":0,"nw":98913.41},"2026-07-08":{"c":51121.63,"sv":47956,"md":0,"nw":99077.63},"2026-07-09":{"c":31355.46,"sv":66740,"md":0,"nw":98095.46},"2026-07-10":{"c":68586.74,"sv":30716,"md":0,"nw":99302.74},"2026-07-11":{"c":48603.54,"sv":49381,"md":0,"nw":97984.54},"2026-07-12":{"c":48603.54,"sv":49330,"md":0,"nw":97933.54},"2026-07-13":{"c":48603.54,"sv":48723,"md":0,"nw":97326.54},"2026-07-14":{"c":48603.54,"sv":47141,"md":0,"nw":95744.54},"2026-07-15":{"c":48603.54,"sv":47660,"md":0,"nw":96263.54},"2026-07-16":{"c":108827.78,"sv":0,"md":0,"nw":108827.78},"2026-07-17":{"c":138827.78,"sv":0,"md":0,"nw":138827.78},"2026-07-18":{"c":138827.78,"sv":0,"md":0,"nw":138827.78},"2026-07-19":{"c":138827.78,"sv":0,"md":0,"nw":138827.78},"2026-07-20":{"c":138827.78,"sv":0,"md":0,"nw":138827.78},"2026-07-21":{"c":80221.33,"sv":58600,"md":0,"nw":138821.33},"2026-07-22":{"c":80221.33,"sv":57600,"md":0,"nw":137821.33},"2026-07-23":{"c":80221.33,"sv":56800,"md":0,"nw":137021.33},"2026-07-24":{"c":80221.33,"sv":57100,"md":0,"nw":137321.33},"2026-07-25":{"c":80221.33,"sv":61900,"md":0,"nw":142121.33},"2026-07-26":{"c":75508.96,"sv":65390,"md":0,"nw":140898.96},"2026-07-27":{"c":71238.49,"sv":71550,"md":0,"nw":142788.49},"2026-07-28":{"c":71238.49,"sv":74950,"md":0,"nw":146188.49},"2026-07-29":{"c":174693.66,"sv":0,"md":0,"nw":174693.66},"2026-07-30":{"c":98725.3,"sv":75960,"md":0,"nw":174685.3},"2026-07-31":{"c":107519.93,"sv":71800,"md":0,"nw":179319.93},"2026-08-01":{"c":123370.26,"sv":63440,"md":0,"nw":186810.26},"2026-08-02":{"c":140999.5,"sv":52920,"md":0,"nw":193919.5},"2026-08-03":{"c":132198.53,"sv":68140,"md":0,"nw":200338.53},"2026-08-04":{"c":132198.53,"sv":76320,"md":0,"nw":208518.53},"2026-08-05":{"c":197198.86,"sv":8580,"md":0,"nw":205778.86},"2026-08-06":{"c":197198.86,"sv":8540,"md":0,"nw":205738.86},"2026-08-07":{"c":197198.86,"sv":8520,"md":0,"nw":205718.86},"2026-08-08":{"c":197198.86,"sv":8260,"md":0,"nw":205458.86},"2026-08-09":{"c":188957.95,"sv":16480,"md":0,"nw":205437.95},"2026-08-10":{"c":188957.95,"sv":14840,"md":0,"nw":203797.95}},"invested":{"2026-07-04":100000,"2026-07-05":100000,"2026-07-06":100000,"2026-07-07":100000,"2026-07-08":100000,"2026-07-09":100000,"2026-07-10":100000,"2026-07-11":100000,"2026-07-12":100000,"2026-07-13":100000,"2026-07-14":100000,"2026-07-15":100000,"2026-07-16":100000,"2026-07-17":130000,"2026-07-18":130000,"2026-07-19":130000,"2026-07-20":130000,"2026-07-21":130000,"2026-07-22":130000,"2026-07-23":130000,"2026-07-24":130000,"2026-07-25":130000,"2026-07-26":130000,"2026-07-27":130000,"2026-07-28":130000,"2026-07-29":160000,"2026-07-30":160000,"2026-07-31":160000,"2026-08-01":160000,"2026-08-02":160000,"2026-08-03":160000,"2026-08-04":160000,"2026-08-05":160000,"2026-08-06":160000,"2026-08-07":160000,"2026-08-08":160000,"2026-08-09":160000,"2026-08-10":160000},"latest":{"holdings":[{"name":"天枢能源","shares":4000,"avg":4.26,"price":3.71,"mv":14840.0,"pct":7.28,"up":-2200.0,"cum":2297.0,"rpct":-12.91}],"date":"2026-08-10"},"phases":[{"n":1,"start":"2026-07-04","end":"2026-07-16","startNw":100000,"endNw":108827.78,"rate":8.83},{"n":2,"start":"2026-07-16","end":"2026-07-29","startNw":138827.78,"endNw":144738.49,"rate":4.26},{"n":3,"start":"2026-07-29","startNw":174738.49,"ongoing":true}],"stats":{"totalTrades":27,"buyCount":14,"sellCount":13,"totalFees":227.05,"totalVolume":610439.0,"salaryCount":2,"salaryTotal":60000,"marginBorrowCount":0,"marginRepayCount":0,"marginInterest":0,"favStock":"天枢能源（13次）","firstTradeDay":6,"lastTradeDay":181,"avgTradeSize":22608.85,"maxDrawdown":4.85,"maxNw":208518.53,"maxProfit":48518.53,"maxProfitPct":30.32,"bestAmt":12564.24,"bestAmtPct":13.05,"bestAmtInfo":"第56→61日","bestPct":13.05,"bestPctAmt":12564.24,"bestPctInfo":"第56→61日","worstAmt":-2739.67,"worstAmtPct":-1.31,"worstAmtInfo":"第156→161日","worstPct":-1.7,"worstPctAmt":-1712.18,"worstPctInfo":"第11→16日","stockPLs":{"A":{"realized":4497.0,"unrealized":-2200.0,"total":2297.0},"B":{"realized":37480,"unrealized":0,"total":37480},"C":{"realized":4248.0,"unrealized":0,"total":4248.0}},"nw":203797.95,"pl":43797.95,"rpct":27.37,"invested":160000}};
 
 // ---------- 工具 ----------
 function pad(n){ return n < 10 ? '0' + n : '' + n; }
@@ -214,6 +237,79 @@ function renderSummary(resolved, locked){
   document.getElementById('summaryCard').innerHTML = html;
 }
 
+function renderPhases(resolved){
+  var html = '<div class="card-title">🏆 阶段收益率 <span class="asof">仅本人可见</span></div>';
+  for (var i = P.phases.length - 1; i >= 0; i--){
+    var ph = P.phases[i];
+    var rate = ph.rate, endNw = ph.endNw, endLabel = ph.end ? fmtCN(ph.end) : '';
+    if (ph.ongoing){
+      var acc = getAcc(resolved);
+      endNw = acc.nw || 0;
+      endLabel = fmtCN(resolved);
+      rate = ph.startNw > 0 ? (endNw - ph.startNw) / ph.startNw * 100 : 0;
+    }
+    var cls = rate >= 0 ? 'up' : 'down';
+    var name = '第' + ph.n + '阶段' + (ph.ongoing ? ' · 进行中' : '');
+    html += '<div class="phase-row">';
+    html += '<div class="phase-info"><span class="phase-name">' + name + '</span><span class="phase-range">' + fmtCN(ph.start) + ' - ' + endLabel + '</span></div>';
+    html += '<div class="phase-right"><div class="phase-rate ' + cls + '">' + (rate >= 0 ? '+' : '') + rate.toFixed(2) + '%</div>';
+    html += '<div class="phase-sub">' + fmtMoney(ph.startNw) + ' → ' + fmtMoney(endNw) + '</div></div>';
+    html += '</div>';
+  }
+  document.getElementById('phaseCard').innerHTML = html;
+}
+
+function renderStats(resolved, locked){
+  var acc = getAcc(resolved);
+  var invested = getInvested(resolved);
+  var nw = acc.nw || 0;
+  var pl = nw - invested;
+  var rpct = invested > 0 ? pl / invested * 100 : 0;
+  var st = P.stats;
+  var posCls = pl >= 0 ? 'up' : 'down';
+
+  var html = '<div class="card-title">📊 个人统计 <span class="asof">截至 ' + fmtCN(resolved) + '</span></div>';
+  html += '<div class="pstats">';
+
+  html += '<div class="pstat"><div class="pstat-label">📊 总盈亏</div><div class="pstat-val ' + posCls + '">' + fmtSigned(pl) + '</div><div class="pstat-sub">收益率 ' + (rpct >= 0 ? '+' : '') + rpct.toFixed(2) + '%</div></div>';
+  html += '<div class="pstat"><div class="pstat-label">💎 净资产</div><div class="pstat-val">' + fmtMoney(nw) + '</div><div class="pstat-sub">累计投入 ' + fmtMoney(invested) + '</div></div>';
+
+  html += '<div class="pstat"><div class="pstat-label">🔄 交易次数</div><div class="pstat-val">' + st.totalTrades + '</div><div class="pstat-sub">买入 ' + st.buyCount + ' · 卖出 ' + st.sellCount + '</div></div>';
+  html += '<div class="pstat"><div class="pstat-label">💸 手续费合计</div><div class="pstat-val">' + fmtMoney(st.totalFees) + '</div><div class="pstat-sub">成交总额 ' + fmtMoney(st.totalVolume) + '</div></div>';
+
+  html += '<div class="pstat"><div class="pstat-label">📅 交易活跃期</div><div class="pstat-val" style="font-size:13px;">' + (st.firstTradeDay ? '第' + st.firstTradeDay + '日 → 第' + st.lastTradeDay + '日' : '无交易') + '</div><div class="pstat-sub">笔均 ' + fmtMoney(st.avgTradeSize) + '</div></div>';
+  html += '<div class="pstat"><div class="pstat-label">🎯 偏好股票</div><div class="pstat-val" style="font-size:13px;">' + st.favStock + '</div></div>';
+
+  html += '<div class="pstat"><div class="pstat-label">💰 工资收入</div><div class="pstat-val">' + fmtMoney(st.salaryTotal) + '</div><div class="pstat-sub">共 ' + st.salaryCount + ' 次</div></div>';
+  html += '<div class="pstat"><div class="pstat-label">🔻 杠杆使用</div><div class="pstat-val" style="font-size:13px;' + (st.marginBorrowCount > 0 ? 'color:#e67e22;' : '') + '">' + (st.marginBorrowCount > 0 ? '借过 ' + st.marginBorrowCount + ' 次' : '未使用') + '</div><div class="pstat-sub">利息支出 ' + fmtMoney(st.marginInterest) + '</div></div>';
+
+  var open = !locked && resolved === P.latestDate;
+  var splHtml = '';
+  if (open){
+    var stockNames = ['天枢能源', '玉衡材料', '摇光电子'];
+    for (var si = 0; si < 3; si++){
+      var spl = st.stockPLs['ABC'.charAt(si)];
+      var tcls = spl.total >= 0 ? 'up' : 'down';
+      var tsign = spl.total >= 0 ? '+' : '-';
+      splHtml += '<div><span style="margin-right:8px;">' + stockNames[si] + '：<span class="' + tcls + '" style="font-weight:600;">' + tsign + fmtMoney(Math.abs(spl.total)) + '</span></span><span style="font-size:11px;color:#8a8fa3;">（已实现 ' + (spl.realized >= 0 ? '+' : '-') + fmtMoney(Math.abs(spl.realized)) + ' ｜ 未实现 ' + (spl.unrealized >= 0 ? '+' : '-') + fmtMoney(Math.abs(spl.unrealized)) + '）</span></div>';
+    }
+  } else {
+    splHtml = '<div class="lock-line">🔒 单支股票盈亏 9:00 解锁</div>';
+  }
+  html += '<div class="pstat" style="grid-column:1/-1;"><div class="pstat-label">📈 单支股票盈亏</div><div style="font-size:13px;line-height:2;margin-top:4px;">' + splHtml + '</div></div>';
+
+  html += '<div class="pstat"><div class="pstat-label">📉 最大回撤</div><div class="pstat-val down">-' + st.maxDrawdown.toFixed(2) + '%</div><div class="pstat-sub">从最高点回落的最大幅度</div></div>';
+  html += '<div class="pstat"><div class="pstat-label">🏔️ 最高盈利</div><div class="pstat-val ' + (st.maxProfit >= 0 ? 'up' : 'down') + '">' + (st.maxProfit >= 0 ? '+' : '-') + fmtMoney(Math.abs(st.maxProfit)) + '</div><div class="pstat-sub">曾达到的最高点（' + (st.maxProfitPct >= 0 ? '+' : '') + st.maxProfitPct.toFixed(2) + '%）</div></div>';
+
+  html += '<div class="pstat"><div class="pstat-label">🔴 单日最高盈利</div><div class="pstat-val up">' + (st.bestAmt > 0 ? '+' + fmtMoney(st.bestAmt) : '-') + '</div><div class="pstat-sub">' + (st.bestAmtInfo || '无') + '（+' + st.bestAmtPct.toFixed(2) + '%）</div></div>';
+  html += '<div class="pstat"><div class="pstat-label">🔴 单日最高收益率</div><div class="pstat-val up">+' + st.bestPct.toFixed(2) + '%</div><div class="pstat-sub">' + (st.bestPctInfo || '无') + '（+' + fmtMoney(st.bestPctAmt) + '）</div></div>';
+  html += '<div class="pstat"><div class="pstat-label">🟢 单日最高亏损</div><div class="pstat-val down">' + fmtMoney(st.worstAmt) + '</div><div class="pstat-sub">' + (st.worstAmtInfo || '无') + '（' + st.worstAmtPct.toFixed(2) + '%）</div></div>';
+  html += '<div class="pstat"><div class="pstat-label">🟢 单日最高亏损率</div><div class="pstat-val down">' + st.worstPct.toFixed(2) + '%</div><div class="pstat-sub">' + (st.worstPctInfo || '无') + '（' + fmtMoney(st.worstPctAmt) + '）</div></div>';
+
+  html += '</div>';
+  document.getElementById('statsCard').innerHTML = html;
+}
+
 function renderCalendar(resolved){
   var days = [];
   for (var i = 0; i < P.days.length; i++) if (P.days[i].d <= resolved) days.push(P.days[i]);
@@ -275,6 +371,8 @@ function render(){
   var locked = resolved < P.latestDate;
   renderNotice(locked, resolved);
   renderSummary(resolved, locked);
+  renderPhases(resolved);
+  renderStats(resolved, locked);
   renderCalendar(resolved);
 }
 
