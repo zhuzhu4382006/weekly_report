@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>阶段操作全景</title><style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:#eef1f6; font-family:"Microsoft YaHei","PingFang SC",-apple-system,sans-serif; }
+    .card { width:100%; max-width:1240px; margin:0 auto; background:#fff; padding:26px 28px 22px; }
+    .card-head { border-bottom:3px solid #1f2a44; padding-bottom:16px; margin-bottom:16px; }
+    .title { font-size:30px; font-weight:800; color:#1f2a44; }
+    .sub { font-size:14px; color:#6b7280; margin-top:6px; }
+    .lock-notice { display:flex; align-items:center; gap:8px; margin-bottom:14px; padding:10px 14px; border-radius:10px; font-size:13px; }
+    .lock-notice.locked { background:#fff7e6; color:#b26a00; border:1px solid #ffe1a8; }
+    .lock-notice.open { background:#e8f7ee; color:#1c7d43; border:1px solid #bfe6cd; }
+    .strip { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:18px; }
+    .strip-item { border:1px solid #e5e7eb; border-radius:12px; padding:12px 16px; background:#f8fafc; }
+    .strip-name { font-size:15px; font-weight:700; color:#1f2a44; }
+    .strip-price { font-size:18px; font-weight:800; margin-top:4px; }
+    .strip-chg { font-size:14px; font-weight:700; margin-top:3px; }
+    .table-wrap { overflow-x:auto; }
+    .grid-wrap { min-width:1080px; }
+    .grid-row { display:grid; grid-template-columns:330px repeat(5,1fr); gap:0; border-bottom:1px solid #eef1f5; }
+    .grid-row:last-child { border-bottom:none; }
+    .cell { padding:12px 10px; min-width:0; }
+    .head { border-bottom:2px solid #1f2a44; background:#f3f5f9; font-weight:800; font-size:15px; color:#1f2a44; text-align:center; }
+    .day { background:#fbfcfe; }
+    .day-date { font-size:19px; font-weight:800; color:#1f2a44; }
+    .day-num { font-size:12px; color:#9aa1ad; margin-bottom:6px; }
+    .prices { font-size:12px; line-height:1.8; color:#374151; }
+    .px-name { color:#6b7280; }
+    .up { color:#d93025; }
+    .down { color:#188038; }
+    .player { border-left:1px solid #eef1f5; }
+    .player.empty { color:#c3c9d2; text-align:center; }
+    .op-block { margin-bottom:8px; }
+    .op-block:last-child { margin-bottom:0; }
+    .op { display:inline-block; font-size:13px; font-weight:700; border-radius:6px; padding:2px 8px; }
+    .op.buy { background:#fde8e8; color:#c62828; }
+    .op.sell { background:#e6f4ea; color:#1e7d34; }
+    .op-hold { font-size:11px; color:#6b7280; margin-top:3px; }
+    .foot { margin-top:16px; font-size:12px; color:#9aa1ad; border-top:1px solid #eef1f5; padding-top:12px; }
+    </style></head>
+<body>
+<div class="card">
+  <div class="card-head">
+    <div class="title">📋 阶段操作全景</div>
+    <div class="sub">第 125-186 交易日 · 谁在哪天、股价怎么变化时做了什么操作</div>
+  </div>
+  <div class="lock-notice" id="lockNotice"></div>
+  <div class="strip" id="strip"></div>
+  <div class="table-wrap"><div class="grid-wrap" id="grid"></div></div>
+  <div class="foot">红涨绿跌 · 买入红标 / 卖出绿标 · 持仓为操作前持仓，仅显示有无不显示数量 · 最新数据每日 9:00 解锁</div>
+</div>
+<script>
+const P = {"phaseStartDay":125,"phaseStartIso":"2026-07-29","phaseStartLabel":"7/29","latestDay":186,"latestDate":"2026-08-10","startPrices":{"A":4.09,"B":36.3,"C":26.48},"days":[{"day":126,"iso":"2026-07-29","label":"7/29","prices":{"A":{"p":4.34,"c":-0.5},"B":{"p":34.15,"c":-0.9},"C":{"p":26.33,"c":-4.0}}},{"day":131,"iso":"2026-07-30","label":"7/30","prices":{"A":{"p":4.23,"c":-2.5},"B":{"p":33.75,"c":-1.2},"C":{"p":26.12,"c":-0.8}}},{"day":136,"iso":"2026-07-31","label":"7/31","prices":{"A":{"p":4.4,"c":4.0},"B":{"p":35.9,"c":6.4},"C":{"p":25.14,"c":-3.8}}},{"day":141,"iso":"2026-08-01","label":"8/1","prices":{"A":{"p":4.41,"c":0.2},"B":{"p":39.65,"c":10.4},"C":{"p":24.48,"c":-2.6}}},{"day":146,"iso":"2026-08-02","label":"8/2","prices":{"A":{"p":4.45,"c":0.9},"B":{"p":44.1,"c":11.2},"C":{"p":24.74,"c":1.1}}},{"day":151,"iso":"2026-08-03","label":"8/3","prices":{"A":{"p":4.4,"c":-1.1},"B":{"p":49.45,"c":12.1},"C":{"p":25.62,"c":3.6}}},{"day":156,"iso":"2026-08-04","label":"8/4","prices":{"A":{"p":4.38,"c":-0.5},"B":{"p":56.3,"c":13.9},"C":{"p":25.01,"c":-2.4}}},{"day":161,"iso":"2026-08-05","label":"8/5","prices":{"A":{"p":4.29,"c":-2.1},"B":{"p":54.2,"c":-3.7},"C":{"p":25.34,"c":1.3}}},{"day":166,"iso":"2026-08-06","label":"8/6","prices":{"A":{"p":4.27,"c":-0.5},"B":{"p":52.05,"c":-4.0},"C":{"p":24.98,"c":-1.4}}},{"day":171,"iso":"2026-08-07","label":"8/7","prices":{"A":{"p":4.26,"c":-0.2},"B":{"p":58.2,"c":11.8},"C":{"p":26.11,"c":4.5}}},{"day":176,"iso":"2026-08-08","label":"8/8","prices":{"A":{"p":4.13,"c":-3.1},"B":{"p":53.95,"c":-7.3},"C":{"p":25.78,"c":-1.3}}},{"day":181,"iso":"2026-08-09","label":"8/9","prices":{"A":{"p":4.12,"c":-0.2},"B":{"p":44.55,"c":-17.4},"C":{"p":25.38,"c":-1.6}}},{"day":186,"iso":"2026-08-10","label":"8/10","prices":{"A":{"p":3.71,"c":-10.0},"B":{"p":43.05,"c":-3.4},"C":{"p":27.06,"c":6.6}}}],"ops":[{"name":"受受","day":126,"iso":"2026-07-29","label":"7/29","type":"buy","sid":"A","stock":"天枢能源","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"受受","day":126,"iso":"2026-07-29","label":"7/29","type":"buy","sid":"C","stock":"摇光电子","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"受受","day":131,"iso":"2026-07-30","label":"7/30","type":"buy","sid":"B","stock":"玉衡材料","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"受受","day":141,"iso":"2026-08-01","label":"8/1","type":"sell","sid":"B","stock":"玉衡材料","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"受受","day":146,"iso":"2026-08-02","label":"8/2","type":"sell","sid":"B","stock":"玉衡材料","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"受受","day":146,"iso":"2026-08-02","label":"8/2","type":"buy","sid":"C","stock":"摇光电子","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"受受","day":156,"iso":"2026-08-04","label":"8/4","type":"buy","sid":"C","stock":"摇光电子","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"受受","day":161,"iso":"2026-08-05","label":"8/5","type":"buy","sid":"A","stock":"天枢能源","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"受受","day":161,"iso":"2026-08-05","label":"8/5","type":"buy","sid":"C","stock":"摇光电子","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"受受","day":166,"iso":"2026-08-06","label":"8/6","type":"buy","sid":"A","stock":"天枢能源","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"受受","day":166,"iso":"2026-08-06","label":"8/6","type":"buy","sid":"B","stock":"玉衡材料","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"受受","day":166,"iso":"2026-08-06","label":"8/6","type":"buy","sid":"C","stock":"摇光电子","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"受受","day":171,"iso":"2026-08-07","label":"8/7","type":"buy","sid":"C","stock":"摇光电子","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"受受","day":171,"iso":"2026-08-07","label":"8/7","type":"buy","sid":"A","stock":"天枢能源","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"受受","day":171,"iso":"2026-08-07","label":"8/7","type":"sell","sid":"B","stock":"玉衡材料","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"受受","day":176,"iso":"2026-08-08","label":"8/8","type":"buy","sid":"B","stock":"玉衡材料","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"受受","day":176,"iso":"2026-08-08","label":"8/8","type":"buy","sid":"C","stock":"摇光电子","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"受受","day":181,"iso":"2026-08-09","label":"8/9","type":"sell","sid":"B","stock":"玉衡材料","is_clear":true,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"受受","day":181,"iso":"2026-08-09","label":"8/9","type":"buy","sid":"A","stock":"天枢能源","is_clear":false,"held":["天枢能源","摇光电子"]},{"name":"小玉","day":126,"iso":"2026-07-29","label":"7/29","type":"sell","sid":"A","stock":"天枢能源","is_clear":true,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"小玉","day":126,"iso":"2026-07-29","label":"7/29","type":"sell","sid":"B","stock":"玉衡材料","is_clear":true,"held":["玉衡材料","摇光电子"]},{"name":"小玉","day":126,"iso":"2026-07-29","label":"7/29","type":"sell","sid":"C","stock":"摇光电子","is_clear":true,"held":["摇光电子"]},{"name":"小玉","day":131,"iso":"2026-07-30","label":"7/30","type":"buy","sid":"A","stock":"天枢能源","is_clear":false,"held":[]},{"name":"小玉","day":131,"iso":"2026-07-30","label":"7/30","type":"buy","sid":"B","stock":"玉衡材料","is_clear":false,"held":["天枢能源"]},{"name":"小玉","day":136,"iso":"2026-07-31","label":"7/31","type":"sell","sid":"A","stock":"天枢能源","is_clear":true,"held":["天枢能源","玉衡材料"]},{"name":"小玉","day":141,"iso":"2026-08-01","label":"8/1","type":"sell","sid":"B","stock":"玉衡材料","is_clear":false,"held":["玉衡材料"]},{"name":"小玉","day":146,"iso":"2026-08-02","label":"8/2","type":"sell","sid":"B","stock":"玉衡材料","is_clear":false,"held":["玉衡材料"]},{"name":"小玉","day":151,"iso":"2026-08-03","label":"8/3","type":"buy","sid":"A","stock":"天枢能源","is_clear":false,"held":["玉衡材料"]},{"name":"小玉","day":161,"iso":"2026-08-05","label":"8/5","type":"sell","sid":"B","stock":"玉衡材料","is_clear":true,"held":["天枢能源","玉衡材料"]},{"name":"小玉","day":181,"iso":"2026-08-09","label":"8/9","type":"buy","sid":"A","stock":"天枢能源","is_clear":false,"held":["天枢能源"]},{"name":"蟹蟹","day":136,"iso":"2026-07-31","label":"7/31","type":"buy","sid":"B","stock":"玉衡材料","is_clear":false,"held":["天枢能源","摇光电子"]},{"name":"蟹蟹","day":136,"iso":"2026-07-31","label":"7/31","type":"sell","sid":"C","stock":"摇光电子","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"蟹蟹","day":146,"iso":"2026-08-02","label":"8/2","type":"sell","sid":"B","stock":"玉衡材料","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"蟹蟹","day":156,"iso":"2026-08-04","label":"8/4","type":"buy","sid":"C","stock":"摇光电子","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"蟹蟹","day":156,"iso":"2026-08-04","label":"8/4","type":"sell","sid":"B","stock":"玉衡材料","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"蟹蟹","day":176,"iso":"2026-08-08","label":"8/8","type":"sell","sid":"A","stock":"天枢能源","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"蟹蟹","day":176,"iso":"2026-08-08","label":"8/8","type":"buy","sid":"B","stock":"玉衡材料","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"飞鸟","day":131,"iso":"2026-07-30","label":"7/30","type":"buy","sid":"C","stock":"摇光电子","is_clear":false,"held":["玉衡材料"]},{"name":"飞鸟","day":136,"iso":"2026-07-31","label":"7/31","type":"buy","sid":"C","stock":"摇光电子","is_clear":false,"held":["玉衡材料","摇光电子"]},{"name":"飞鸟","day":141,"iso":"2026-08-01","label":"8/1","type":"sell","sid":"B","stock":"玉衡材料","is_clear":true,"held":["玉衡材料","摇光电子"]},{"name":"飞鸟","day":141,"iso":"2026-08-01","label":"8/1","type":"buy","sid":"C","stock":"摇光电子","is_clear":false,"held":["摇光电子"]},{"name":"飞鸟","day":146,"iso":"2026-08-02","label":"8/2","type":"buy","sid":"C","stock":"摇光电子","is_clear":false,"held":["摇光电子"]},{"name":"飞鸟","day":151,"iso":"2026-08-03","label":"8/3","type":"sell","sid":"C","stock":"摇光电子","is_clear":false,"held":["摇光电子"]},{"name":"飞鸟","day":161,"iso":"2026-08-05","label":"8/5","type":"sell","sid":"C","stock":"摇光电子","is_clear":false,"held":["摇光电子"]},{"name":"飞鸟","day":171,"iso":"2026-08-07","label":"8/7","type":"sell","sid":"C","stock":"摇光电子","is_clear":false,"held":["摇光电子"]},{"name":"飞鸟","day":181,"iso":"2026-08-09","label":"8/9","type":"sell","sid":"C","stock":"摇光电子","is_clear":true,"held":["摇光电子"]},{"name":"鹅蛋","day":131,"iso":"2026-07-30","label":"7/30","type":"sell","sid":"A","stock":"天枢能源","is_clear":true,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"鹅蛋","day":131,"iso":"2026-07-30","label":"7/30","type":"sell","sid":"B","stock":"玉衡材料","is_clear":true,"held":["玉衡材料","摇光电子"]},{"name":"鹅蛋","day":131,"iso":"2026-07-30","label":"7/30","type":"sell","sid":"C","stock":"摇光电子","is_clear":true,"held":["摇光电子"]},{"name":"鹅蛋","day":151,"iso":"2026-08-03","label":"8/3","type":"buy","sid":"C","stock":"摇光电子","is_clear":false,"held":[]},{"name":"鹅蛋","day":161,"iso":"2026-08-05","label":"8/5","type":"buy","sid":"A","stock":"天枢能源","is_clear":false,"held":["摇光电子"]},{"name":"鹅蛋","day":161,"iso":"2026-08-05","label":"8/5","type":"buy","sid":"A","stock":"天枢能源","is_clear":false,"held":["天枢能源","摇光电子"]},{"name":"鹅蛋","day":161,"iso":"2026-08-05","label":"8/5","type":"buy","sid":"C","stock":"摇光电子","is_clear":false,"held":["天枢能源","摇光电子"]}],"players":["受受","小玉","蟹蟹","飞鸟","鹅蛋"]};
+
+function pad(n){ return n < 10 ? '0' + n : '' + n; }
+function fmtCN(iso){
+  var a = iso.split('-');
+  return parseInt(a[1],10) + '月' + parseInt(a[2],10) + '日';
+}
+function fmt(n){ return Number(n).toFixed(2); }
+function fmtPct(n){ return (n >= 0 ? '+' : '') + Number(n).toFixed(1) + '%'; }
+function fmtSigned(n){ return (n >= 0 ? '+' : '-') + fmt(Math.abs(n)); }
+
+function getResolvedDate(){
+  var now = new Date();
+  if (now.getHours() < 9) now.setDate(now.getDate() - 1);
+  var s = now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate());
+  if (s > P.latestDate) s = P.latestDate;
+  return s;
+}
+
+var PREVIEW = window.location.hash.indexOf('preview') >= 0;
+document.addEventListener('keydown', function(e){
+  if (e.ctrlKey && e.shiftKey && (e.key === 'K' || e.key === 'k')){
+    e.preventDefault();
+    PREVIEW = true;
+    render();
+  }
+});
+
+function visibleDays(resolved){
+  return P.days.filter(function(d){ return d.iso <= resolved; });
+}
+function visibleOps(resolved){
+  return P.ops.filter(function(o){ return o.iso <= resolved; });
+}
+
+function renderNotice(resolved, locked){
+  var el = document.getElementById('lockNotice');
+  if (locked){
+    el.className = 'lock-notice locked';
+    el.innerHTML = '🔒 最新（' + fmtCN(P.latestDate) + '）数据 9:00 解锁 · 当前显示至 ' + fmtCN(resolved);
+  } else {
+    el.className = 'lock-notice open';
+    el.innerHTML = '✅ 全部数据已解锁 · 截至 ' + fmtCN(P.latestDate);
+  }
+}
+
+function renderStrip(resolved, locked){
+  var vdays = visibleDays(resolved);
+  var end = vdays.length ? vdays[vdays.length - 1].prices : null;
+  var html = '';
+  for (var sid of ['A','B','C']){
+    var sp = P.startPrices[sid];
+    var ep = end ? end[sid].p : sp;
+    var chg = sp > 0 ? (ep - sp) / sp * 100 : 0;
+    var cls = chg >= 0 ? 'up' : 'down';
+    var arrow = chg >= 0 ? '▲' : '▼';
+    html += '<div class="strip-item">';
+    html += '<div class="strip-name">' + ({A:'天枢能源',B:'玉衡材料',C:'摇光电子'}[sid]) + '</div>';
+    html += '<div class="strip-price">' + fmt(sp) + ' → ' + fmt(ep) + '</div>';
+    html += '<div class="strip-chg ' + cls + '">' + arrow + ' ' + fmtPct(chg) + '</div>';
+    html += '</div>';
+  }
+  var el = document.getElementById('strip');
+  el.innerHTML = html;
+  var first = el.firstChild;
+  var note = document.createElement('div');
+  note.style.cssText = 'grid-column:1/-1;font-size:12px;color:#6b7280;';
+  note.textContent = '阶段初 ' + P.phaseStartLabel + ' → 截至 ' + fmtCN(resolved);
+  el.appendChild(note);
+}
+
+function renderGrid(resolved, locked){
+  var vdays = visibleDays(resolved);
+  var vops = visibleOps(resolved);
+  var html = '<div class="grid-row"><div class="cell head">日期 / 行情</div>';
+  for (var p of P.players) html += '<div class="cell head">' + p + '</div>';
+  html += '</div>';
+
+  for (var i = 0; i < vdays.length; i++){
+    var d = vdays[i];
+    var opsToday = vops.filter(function(o){ return o.day === d.day; });
+    if (!opsToday.length) continue;
+    var prices = '';
+    for (var sid of ['A','B','C']){
+      var px = d.prices[sid];
+      var cls = px.c >= 0 ? 'up' : 'down';
+      var arrow = px.c >= 0 ? '▲' : '▼';
+      prices += '<div class="px"><span class="px-name">' + ({A:'天枢能源',B:'玉衡材料',C:'摇光电子'}[sid]) + '</span> <b>' + fmt(px.p) + '</b> <span class="' + cls + '">' + arrow + ' ' + fmtPct(px.c) + '</span></div>';
+    }
+    html += '<div class="grid-row"><div class="cell day"><div class="day-date">' + d.label + '</div><div class="day-num">第' + d.day + '日</div><div class="prices">' + prices + '</div></div>';
+    for (var p of P.players){
+      var ops = opsToday.filter(function(o){ return o.name === p; });
+      if (!ops.length){
+        html += '<div class="cell player empty">—</div>';
+        continue;
+      }
+      var blocks = '';
+      for (var t of ops){
+        var cls2 = t.type === 'buy' ? 'buy' : 'sell';
+        var label = t.type === 'buy' ? '买入' : (t.is_clear ? '卖出（清仓）' : '卖出');
+        blocks += '<div class="op-block"><div class="op ' + cls2 + '">' + label + ' ' + t.stock + '</div><div class="op-hold">持：' + (t.held.length ? t.held.join(' · ') : '空仓') + '</div></div>';
+      }
+      html += '<div class="cell player">' + blocks + '</div>';
+    }
+    html += '</div>';
+  }
+  document.getElementById('grid').innerHTML = html;
+}
+
+function render(){
+  var resolved = PREVIEW ? P.latestDate : getResolvedDate();
+  var locked = resolved < P.latestDate;
+  renderNotice(resolved, locked);
+  renderStrip(resolved, locked);
+  renderGrid(resolved, locked);
+}
+render();
+</script>
+</body>
+</html>
