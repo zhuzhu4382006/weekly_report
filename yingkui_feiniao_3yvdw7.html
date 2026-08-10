@@ -223,7 +223,7 @@ function renderSummary(resolved, locked){
         html += '<div class="hd-item"><div class="hd-label">均价</div><div class="hd-val">' + h.avg.toFixed(3) + '</div></div>';
         html += '<div class="hd-item"><div class="hd-label">现价</div><div class="hd-val">' + h.price.toFixed(3) + '</div></div>';
         html += '<div class="hd-item"><div class="hd-label">仓位</div><div class="hd-val">' + h.pct.toFixed(1) + '%</div></div>';
-        html += '<div class="hd-item"><div class="hd-label">浮动盈亏</div><div class="hd-val ' + (h.up >= 0 ? 'up' : 'down') + '">' + fmtSigned(h.up) + '</div></div>';
+        html += '<div class="hd-item"><div class="hd-label">浮动盈亏</div><div class="hd-val ' + (h.up >= 0 ? 'up' : 'down') + '">' + fmtSigned(h.up) + ' <span style="font-weight:400;font-size:11px;">(' + (h.rpct >= 0 ? '+' : '') + h.rpct.toFixed(2) + '%)</span></div></div>';
         html += '<div class="hd-item"><div class="hd-label">累计盈亏</div><div class="hd-val ' + (h.cum >= 0 ? 'up' : 'down') + '">' + fmtSigned(h.cum) + '</div></div>';
         html += '</div></div>';
       }
