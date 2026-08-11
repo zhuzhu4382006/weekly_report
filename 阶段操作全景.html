@@ -63,7 +63,7 @@
 <div class="card">
   <div class="card-head">
     <div class="title">📋 阶段操作全景</div>
-    <div class="sub">第 188-191 交易日 · 谁在哪天、股价怎么变化时做了什么操作</div>
+    <div class="sub">第 188-196 交易日 · 谁在哪天、股价怎么变化时做了什么操作</div>
   </div>
   <div class="lock-notice" id="lockNotice"></div>
   <div class="strip" id="strip"></div>
@@ -72,7 +72,7 @@
   <div class="foot">红涨绿跌 · 买入红标 / 卖出绿标 · 持仓为操作前持仓，仅显示有无不显示数量 · 最新数据每日 9:00 解锁</div>
 </div>
 <script>
-const P = {"phaseStartDay":188,"phaseStartIso":"2026-08-10","phaseStartLabel":"8/10","latestDay":191,"latestDate":"2026-08-11","startPrices":{"A":3.72,"B":43.2,"C":26.72},"days":[{"day":191,"iso":"2026-08-11","label":"8/11","prices":{"A":{"p":3.73,"c":0.5},"B":{"p":41.95,"c":-2.6},"C":{"p":27.06,"c":0.0}}}],"ops":[],"players":["受受","小玉","蟹蟹","飞鸟","鹅蛋"]};
+const P = {"phaseStartDay":188,"phaseStartIso":"2026-08-10","phaseStartLabel":"8/10","latestDay":196,"latestDate":"2026-08-12","startPrices":{"A":3.72,"B":43.2,"C":26.72},"days":[{"day":191,"iso":"2026-08-11","label":"8/11","prices":{"A":{"p":3.73,"c":0.5},"B":{"p":41.95,"c":-2.6},"C":{"p":27.06,"c":0.0}}},{"day":196,"iso":"2026-08-12","label":"8/12","prices":{"A":{"p":3.72,"c":-0.3},"B":{"p":48.2,"c":14.9},"C":{"p":26.57,"c":-1.8}}}],"ops":[{"name":"蟹蟹","day":191,"iso":"2026-08-11","label":"8/11","type":"buy","sid":"A","stock":"天枢能源","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"蟹蟹","day":191,"iso":"2026-08-11","label":"8/11","type":"sell","sid":"C","stock":"摇光电子","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]}],"players":["受受","小玉","蟹蟹","飞鸟","鹅蛋"]};
 
 function pad(n){ return n < 10 ? '0' + n : '' + n; }
 function fmtCN(iso){
