@@ -130,7 +130,7 @@ body {
 </div>
 
 <script>
-const P = {"name":"若梦","latestDate":"2026-08-13","days":[{"d":"2026-08-13","p":310.0,"nw":190308.36,"s":{"A":208.0,"B":0.0,"C":102.0}}],"accounts":{"2026-08-12":{"c":175012.36,"sv":14986,"md":0,"nw":189998.36},"2026-08-13":{"c":175012.36,"sv":15296,"md":0,"nw":190308.36}},"invested":{"2026-08-12":190000,"2026-08-13":190000},"latest":{"holdings":[{"sid":"A","name":"天枢能源","shares":2600,"avg":3.72,"price":3.8,"mv":9880.0,"pct":5.19,"up":208.0,"cum":208.0,"rpct":2.15},{"sid":"C","name":"摇光电子","shares":200,"avg":26.57,"price":27.08,"mv":5416.0,"pct":2.85,"up":102.0,"cum":102.0,"rpct":1.92}],"date":"2026-08-13"},"phases":[{"n":4,"start":"2026-08-10","startNw":190000,"ongoing":true}],"stats":{"totalTrades":2,"buyCount":2,"sellCount":0,"totalFees":1.64,"totalVolume":14986.0,"salaryCount":3,"salaryTotal":90000,"marginBorrowCount":0,"marginRepayCount":0,"marginInterest":0,"favStock":"天枢能源（1次）","firstTradeDay":196,"lastTradeDay":196,"avgTradeSize":7493.0,"maxDrawdown":0.0,"maxNw":190308.36,"maxProfit":308.36,"maxProfitPct":0.16,"bestAmt":310.0,"bestAmtPct":0.16,"bestAmtInfo":"第196→201日","bestPct":0.16,"bestPctAmt":310.0,"bestPctInfo":"第196→201日","worstAmt":0,"worstAmtPct":0,"worstAmtInfo":0,"worstPct":0,"worstPctAmt":0,"worstPctInfo":0,"stockPLs":{"A":{"realized":0,"unrealized":208.0,"total":208.0},"B":{"realized":0,"unrealized":0,"total":0},"C":{"realized":0,"unrealized":102.0,"total":102.0}},"nw":190308.36,"pl":308.36,"rpct":0.16,"invested":190000}};
+const P = {"name":"若梦","latestDate":"2026-08-13","days":[{"d":"2026-08-13","g0":196,"g":201,"p":310.0,"nw":190308.36,"s":{"A":208.0,"B":0.0,"C":102.0}}],"accounts":{"2026-08-12":{"c":175012.36,"sv":14986,"md":0,"nw":189998.36},"2026-08-13":{"c":175012.36,"sv":15296,"md":0,"nw":190308.36}},"invested":{"2026-08-12":190000,"2026-08-13":190000},"latest":{"holdings":[{"sid":"A","name":"天枢能源","shares":2600,"avg":3.72,"price":3.8,"mv":9880.0,"pct":5.19,"up":208.0,"cum":208.0,"rpct":2.15},{"sid":"C","name":"摇光电子","shares":200,"avg":26.57,"price":27.08,"mv":5416.0,"pct":2.85,"up":102.0,"cum":102.0,"rpct":1.92}],"date":"2026-08-13"},"phases":[{"n":4,"start":"2026-08-10","startNw":190000,"ongoing":true}],"stats":{"totalTrades":2,"buyCount":2,"sellCount":0,"totalFees":1.64,"totalVolume":14986.0,"salaryCount":3,"salaryTotal":90000,"marginBorrowCount":0,"marginRepayCount":0,"marginInterest":0,"favStock":"天枢能源（1次）","firstTradeDay":196,"lastTradeDay":196,"avgTradeSize":7493.0,"maxDrawdown":0.0,"maxNw":190308.36,"maxProfit":308.36,"maxProfitPct":0.16,"bestAmt":310.0,"bestAmtPct":0.16,"bestAmtInfo":"第196→201日","bestPct":0.16,"bestPctAmt":310.0,"bestPctInfo":"第196→201日","worstAmt":0,"worstAmtPct":0,"worstAmtInfo":0,"worstPct":0,"worstPctAmt":0,"worstPctInfo":0,"stockPLs":{"A":{"realized":0,"unrealized":208.0,"total":208.0},"B":{"realized":0,"unrealized":0,"total":0},"C":{"realized":0,"unrealized":102.0,"total":102.0}},"nw":190308.36,"pl":308.36,"rpct":0.16,"invested":190000}};
 
 // ---------- 工具 ----------
 function pad(n){ return n < 10 ? '0' + n : '' + n; }
@@ -178,6 +178,58 @@ function getInvested(dateStr){
   var keys = Object.keys(P.invested).sort();
   for (var i = keys.length - 1; i >= 0; i--) if (keys[i] <= dateStr) return P.invested[keys[i]];
   return 100000;
+}
+
+// 未解锁时,个人统计只按已解锁日期重算,不提前透露最新一天的数据
+function getPeriodStats(resolved){
+  var keys = Object.keys(P.accounts).filter(function(d){ return d <= resolved; }).sort();
+  var dayMap = {};
+  for (var i = 0; i < P.days.length; i++) dayMap[P.days[i].d] = P.days[i];
+
+  var maxDrawdown = 0, peakNw = 100000;
+  var maxProfit = -Infinity, maxProfitPct = 0;
+  var bestAmt = 0, bestAmtPct = 0, bestAmtInfo = '';
+  var bestPct = 0, bestPctAmt = 0, bestPctInfo = '';
+  var worstAmt = 0, worstAmtPct = 0, worstAmtInfo = '';
+  var worstPct = 0, worstPctAmt = 0, worstPctInfo = '';
+
+  for (var i = 0; i < keys.length; i++){
+    var d = keys[i];
+    var nw = P.accounts[d].nw;
+    if (nw == null) continue;
+    if (nw > peakNw) peakNw = nw;
+    var dd = peakNw > 0 ? (peakNw - nw) / peakNw * 100 : 0;
+    if (dd > maxDrawdown) maxDrawdown = dd;
+    var inv = getInvested(d);
+    var profit = nw - inv;
+    var pct = inv > 0 ? profit / inv * 100 : 0;
+    if (profit > maxProfit){ maxProfit = profit; maxProfitPct = pct; }
+  }
+  if (maxProfit === -Infinity) maxProfit = 0;
+
+  for (var i = 1; i < keys.length; i++){
+    var prevD = keys[i-1], currD = keys[i];
+    var prevNw = P.accounts[prevD].nw, currNw = P.accounts[currD].nw;
+    if (prevNw == null || currNw == null || prevNw <= 0) continue;
+    var day = dayMap[currD];
+    var change = day ? day.p : ((currNw - prevNw) - 0);
+    var changePct = prevNw > 0 ? change / prevNw * 100 : 0;
+    var info = day ? ('第' + day.g0 + '→' + day.g + '日') : '';
+    if (change > bestAmt){ bestAmt = change; bestAmtPct = changePct; bestAmtInfo = info; }
+    if (changePct > bestPct){ bestPct = changePct; bestPctAmt = change; bestPctInfo = info; }
+    if (change < worstAmt){ worstAmt = change; worstAmtPct = changePct; worstAmtInfo = info; }
+    if (changePct < worstPct){ worstPct = changePct; worstPctAmt = change; worstPctInfo = info; }
+  }
+
+  return {
+    maxDrawdown: maxDrawdown,
+    maxProfit: maxProfit,
+    maxProfitPct: maxProfitPct,
+    bestAmt: bestAmt, bestAmtPct: bestAmtPct, bestAmtInfo: bestAmtInfo,
+    bestPct: bestPct, bestPctAmt: bestPctAmt, bestPctInfo: bestPctInfo,
+    worstAmt: worstAmt, worstAmtPct: worstAmtPct, worstAmtInfo: worstAmtInfo,
+    worstPct: worstPct, worstPctAmt: worstPctAmt, worstPctInfo: worstPctInfo
+  };
 }
 
 function renderNotice(locked, resolved){
@@ -269,6 +321,7 @@ function renderStats(resolved, locked){
   var pl = nw - invested;
   var rpct = invested > 0 ? pl / invested * 100 : 0;
   var st = P.stats;
+  var ps = getPeriodStats(resolved);
   var posCls = pl >= 0 ? 'up' : 'down';
 
   var html = '<div class="card-title">📊 个人统计 <span class="asof">截至 ' + fmtCN(resolved) + '</span></div>';
@@ -301,13 +354,13 @@ function renderStats(resolved, locked){
   }
   html += '<div class="pstat" style="grid-column:1/-1;"><div class="pstat-label">📈 单支股票盈亏</div><div style="font-size:13px;line-height:2;margin-top:4px;">' + splHtml + '</div></div>';
 
-  html += '<div class="pstat"><div class="pstat-label">📉 最大回撤</div><div class="pstat-val down">-' + st.maxDrawdown.toFixed(2) + '%</div><div class="pstat-sub">从最高点回落的最大幅度</div></div>';
-  html += '<div class="pstat"><div class="pstat-label">🏔️ 最高盈利</div><div class="pstat-val ' + (st.maxProfit >= 0 ? 'up' : 'down') + '">' + (st.maxProfit >= 0 ? '+' : '-') + fmtMoney(Math.abs(st.maxProfit)) + '</div><div class="pstat-sub">曾达到的最高点（' + (st.maxProfitPct >= 0 ? '+' : '') + st.maxProfitPct.toFixed(2) + '%）</div></div>';
+  html += '<div class="pstat"><div class="pstat-label">📉 最大回撤</div><div class="pstat-val down">-' + ps.maxDrawdown.toFixed(2) + '%</div><div class="pstat-sub">从最高点回落的最大幅度</div></div>';
+  html += '<div class="pstat"><div class="pstat-label">🏔️ 最高盈利</div><div class="pstat-val ' + (ps.maxProfit >= 0 ? 'up' : 'down') + '">' + (ps.maxProfit >= 0 ? '+' : '-') + fmtMoney(Math.abs(ps.maxProfit)) + '</div><div class="pstat-sub">曾达到的最高点（' + (ps.maxProfitPct >= 0 ? '+' : '') + ps.maxProfitPct.toFixed(2) + '%）</div></div>';
 
-  html += '<div class="pstat"><div class="pstat-label">🔴 单日最高盈利</div><div class="pstat-val up">' + (st.bestAmt > 0 ? '+' + fmtMoney(st.bestAmt) : '-') + '</div><div class="pstat-sub">' + (st.bestAmtInfo || '无') + '（+' + st.bestAmtPct.toFixed(2) + '%）</div></div>';
-  html += '<div class="pstat"><div class="pstat-label">🔴 单日最高收益率</div><div class="pstat-val up">+' + st.bestPct.toFixed(2) + '%</div><div class="pstat-sub">' + (st.bestPctInfo || '无') + '（+' + fmtMoney(st.bestPctAmt) + '）</div></div>';
-  html += '<div class="pstat"><div class="pstat-label">🟢 单日最高亏损</div><div class="pstat-val down">' + fmtMoney(st.worstAmt) + '</div><div class="pstat-sub">' + (st.worstAmtInfo || '无') + '（' + st.worstAmtPct.toFixed(2) + '%）</div></div>';
-  html += '<div class="pstat"><div class="pstat-label">🟢 单日最高亏损率</div><div class="pstat-val down">' + st.worstPct.toFixed(2) + '%</div><div class="pstat-sub">' + (st.worstPctInfo || '无') + '（' + fmtMoney(st.worstPctAmt) + '）</div></div>';
+  html += '<div class="pstat"><div class="pstat-label">🔴 单日最高盈利</div><div class="pstat-val up">' + (ps.bestAmt > 0 ? '+' + fmtMoney(ps.bestAmt) : '-') + '</div><div class="pstat-sub">' + (ps.bestAmtInfo || '无') + '（+' + ps.bestAmtPct.toFixed(2) + '%）</div></div>';
+  html += '<div class="pstat"><div class="pstat-label">🔴 单日最高收益率</div><div class="pstat-val up">+' + ps.bestPct.toFixed(2) + '%</div><div class="pstat-sub">' + (ps.bestPctInfo || '无') + '（+' + fmtMoney(ps.bestPctAmt) + '）</div></div>';
+  html += '<div class="pstat"><div class="pstat-label">🟢 单日最高亏损</div><div class="pstat-val down">' + fmtMoney(ps.worstAmt) + '</div><div class="pstat-sub">' + (ps.worstAmtInfo || '无') + '（' + ps.worstAmtPct.toFixed(2) + '%）</div></div>';
+  html += '<div class="pstat"><div class="pstat-label">🟢 单日最高亏损率</div><div class="pstat-val down">' + ps.worstPct.toFixed(2) + '%</div><div class="pstat-sub">' + (ps.worstPctInfo || '无') + '（' + fmtMoney(ps.worstPctAmt) + '）</div></div>';
 
   html += '</div>';
   document.getElementById('statsCard').innerHTML = html;
