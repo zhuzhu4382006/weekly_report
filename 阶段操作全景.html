@@ -16,8 +16,8 @@
     .strip-price { font-size:18px; font-weight:800; margin-top:4px; }
     .strip-chg { font-size:14px; font-weight:700; margin-top:3px; }
     .table-wrap { overflow-x:auto; }
-    .grid-wrap { min-width:1080px; }
-    .grid-row { display:grid; grid-template-columns:330px repeat(5,1fr); gap:0; border-bottom:1px solid #eef1f5; }
+    .grid-wrap { min-width:max(1080px, calc(330px + var(--player-count, 6) * 140px)); }
+    .grid-row { display:grid; grid-template-columns:330px repeat(var(--player-count, 6), minmax(0,1fr)); gap:0; border-bottom:1px solid #eef1f5; }
     .grid-row:last-child { border-bottom:none; }
     .cell { padding:12px 10px; min-width:0; }
     .head { border-bottom:2px solid #1f2a44; background:#f3f5f9; font-weight:800; font-size:15px; color:#1f2a44; text-align:center; }
@@ -146,6 +146,7 @@ function renderStrip(resolved, locked){
 function renderGrid(resolved, locked){
   var vdays = visibleDays(resolved);
   var vops = visibleOps(resolved);
+  document.getElementById('gridDesktop').style.setProperty('--player-count', P.players.length);
   var html = '<div class="grid-row"><div class="cell head">日期 / 行情</div>';
   for (var p of P.players) html += '<div class="cell head">' + p + '</div>';
   html += '</div>';
