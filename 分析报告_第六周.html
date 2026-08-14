@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第六周资产排名分析报告</title>
+<style>
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  max-width: 720px; margin: 0 auto; padding: 30px 20px 60px;
+  background: #fafbfc; color: #1e293b; line-height: 1.8; font-size: 15px;
+}
+h1 { text-align: center; font-size: 24px; margin-bottom: 6px; }
+h1 + p { text-align: center; color: #64748b; margin-bottom: 32px; font-size: 14px; }
+h2 { font-size: 18px; margin-top: 36px; padding-bottom: 8px; border-bottom: 2px solid #2563eb; }
+h3 { font-size: 16px; margin-top: 24px; }
+table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+th, td { padding: 9px 12px; text-align: center; border-bottom: 1px solid #e2e8f0; }
+th { background: #f1f5f9; font-weight: 600; color: #475569; }
+td:first-child { font-weight: 500; white-space: nowrap; }
+td.left { text-align: left; }
+ul, ol { padding-left: 20px; }
+li { margin: 4px 0; }
+.highlight { background: #eff6ff; border-left: 3px solid #2563eb; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 12px 0; }
+.warn { background: #fef2f2; border-left: 3px solid #dc2626; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 12px 0; }
+blockquote { background: #f8fafc; border-left: 3px solid #94a3b8; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; color: #475569; font-style: italic; }
+blockquote strong { color: #1e293b; }
+hr { border: none; border-top: 1px solid #e2e8f0; margin: 28px 0; }
+.rank { font-size: 20px; }
+.meta { text-align: center; color: #64748b; font-size: 14px; margin-bottom: 24px; }
+.quote-table td:first-child { white-space: nowrap; font-weight: 600; }
+.player-name { font-weight: 700; font-size: 16px; }
+.player-tag { display: inline-block; background: #eff6ff; color: #2563eb; font-size: 12px; padding: 0 8px; border-radius: 4px; margin-left: 6px; }
+.positive { color: #dc2626; }
+.negative { color: #16a34a; }
+@media (max-width: 500px) { body { padding: 16px 12px; font-size: 14px; } h1 { font-size: 20px; } }
+.unlock-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: #fafbfc;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; gap: 14px; padding: 30px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: #475569;
+}
+.unlock-overlay .lock-emoji { font-size: 56px; }
+.unlock-overlay .lock-title { font-size: 22px; font-weight: 700; color: #1e293b; }
+.unlock-overlay .lock-sub { font-size: 14px; color: #64748b; line-height: 1.9; }
+.unlock-overlay .lock-sub strong { color: #1e293b; }
+</style>
+</head>
+<body>
+
+<!-- ===== 日期锁定:结算周六 9:00 前对选手隐藏 ===== -->
+<div class="unlock-overlay" id="unlockOverlay">
+  <div class="lock-emoji">🔒</div>
+  <div class="lock-title">本周报已锁定</div>
+  <div class="lock-sub">将于 <strong>8月15日（周六）9:00</strong> 自动解锁</div>
+</div>
+<script>
+  var UNLOCK_TIME = new Date(2026, 7, 15, 9, 0, 0); // 8月15日(周六) 9:00
+  var PREVIEW = window.location.hash.indexOf('preview') >= 0;
+  function updateLock(){
+    var el = document.getElementById('unlockOverlay');
+    var locked = !PREVIEW && new Date() < UNLOCK_TIME;
+    if (el) el.style.display = locked ? 'flex' : 'none';
+  }
+  updateLock();
+  document.addEventListener('keydown', function(e){
+    if (e.ctrlKey && e.shiftKey && (e.key === 'K' || e.key === 'k')) { PREVIEW = true; updateLock(); }
+  });
+</script>
+
+<h1>📈 第六周资产排名分析报告</h1>
+<p class="meta">
+  <strong>现实时间：</strong>8月8日（周六）→ 8月15日（周六）<br>
+  <strong>市场环境：</strong>玉衡材料周初深跌约 32% 后一周内强势收回，周涨幅仅 +1.6%；摇光电子 +8.2% 创开赛新高；天枢能源 -7.5% 继续阴跌
+</p>
+
+<hr>
+
+<h2>📊 排名</h2>
+
+<table>
+  <tr>
+    <th>排名</th>
+    <th style="text-align:left;">选手</th>
+    <th>持仓</th>
+  </tr>
+  <tr>
+    <td><span class="rank">🥇</span></td>
+    <td style="text-align:left;"><strong>受受</strong></td>
+    <td>天枢 / 玉衡 / 摇光</td>
+  </tr>
+  <tr>
+    <td><span class="rank">🥈</span></td>
+    <td style="text-align:left;"><strong>小玉</strong></td>
+    <td>天枢能源</td>
+  </tr>
+  <tr>
+    <td><span class="rank">🥉</span></td>
+    <td style="text-align:left;"><strong>蟹蟹</strong></td>
+    <td>天枢 / 摇光</td>
+  </tr>
+</table>
+
+<div class="highlight">
+  💡 具体仓位和金额不公布，游戏结束才揭晓。若梦本周新加入，目前在后半段。
+</div>
+
+<p><strong>本周变化：</strong>本周前三名与上周一致——受受连续第六周第一，小玉、蟹蟹分列二三。这周玉衡走出"先崩后涨"的深V行情，受受在暴跌日止损离场、反弹确认后又买回，节奏依旧最稳；小玉、蟹蟹也有不错的盈利；飞鸟清仓摇光后转入天枢，鹅蛋一路分批加仓。新选手若梦本周进场试水，逐步建仓。</p>
+
+<p><strong>对照组（存银行定期）：</strong>稳定增长中。</p>
+
+<hr>
+
+<h2>📈 本周行情回顾（8/8→8/15）</h2>
+
+<table>
+  <tr>
+    <th>股票</th>
+    <th>上周收盘</th>
+    <th>本周收盘</th>
+    <th>周涨幅</th>
+  </tr>
+  <tr>
+    <td>天枢能源</td>
+    <td>4.13</td>
+    <td>3.82</td>
+    <td class="negative"><strong>-7.5%</strong></td>
+  </tr>
+  <tr>
+    <td><strong>玉衡材料</strong></td>
+    <td>53.95</td>
+    <td><strong>54.80</strong></td>
+    <td class="positive"><strong>+1.6%</strong></td>
+  </tr>
+  <tr>
+    <td><strong>摇光电子</strong></td>
+    <td>25.78</td>
+    <td><strong>27.90</strong></td>
+    <td class="positive"><strong>+8.2%</strong></td>
+  </tr>
+</table>
+
+<p>本周最大的戏码在<strong>玉衡材料</strong>：周六（8/8）收在 53.95，周日（8/9）直接崩到 44.55，盘中一度砸到 36.45——相比上周收盘最深回撤约 32%，是开赛以来最猛的一次单日下杀。但随后一周它连续反弹：周一 43.05、周二 41.95 触底、周三 48.20、周四 51.55、周五小幅回落到 48.65，<strong>周六（8/15）收回到 54.80</strong>，几乎收复全部失地，周涨幅定格 +1.6%，开赛以来累计涨幅达到 225%。<strong>摇光电子</strong>本周稳步上行 +8.2%，收 27.90，创开赛以来新高；<strong>天枢能源</strong>继续阴跌 7.5%，从 4.13 跌到 3.82。</p>
+
+<hr>
+
+<h2>🧠 各选手复盘分析</h2>
+
+<h3>受受 —— 暴跌日果断止损，反弹确认后买回</h3>
+<p><strong>本周操作：止损玉衡、加仓天枢、止盈摇光、买回玉衡</strong></p>
+
+<p><strong>周日（8/9）</strong>：玉衡下杀当天止损玉衡，同时买入天枢："止损。" <strong>周一（8/10）</strong>：大幅补仓天枢："抄底补仓"；同时止盈摇光："终于抄到了，止盈。"</p>
+
+<p><strong>周三（8/12）</strong>：买入摇光："连阴，缩量。" <strong>周四（8/13）</strong>：在玉衡反弹确认后重新买回："放量反弹，趋势修复完成。"</p>
+
+<p><strong>评价：</strong>受受这周最值得称道的一点，是<strong>在暴跌日没有死扛，而是先止损离场</strong>，随后在玉衡放量反弹、趋势修复确认后重新买回。虽然止损位置未必是低点，但避开了最凶险的一段；周一补仓天枢、止盈摇光，节奏又找了回来。连续第六周第一，靠的是纪律。</p>
+
+<hr>
+
+<h3>小玉 —— 只做天枢，低位加仓</h3>
+<p><strong>本周操作：连续两天买入天枢</strong></p>
+
+<p><strong>周日（8/9）</strong>：买入天枢。<strong>周一（8/10）</strong>：继续补仓天枢，备注"抄受受作业"。</p>
+
+<p>此后一直持仓不动。</p>
+
+<p><strong>评价：</strong>小玉这周操作极简：只加仓天枢，两天连续买入，把成本一路摊低。天枢虽然继续阴跌，但她的成本越买越低，全周没有一笔卖出，心态很稳，净值稳中有升，稳坐第二。</p>
+
+<hr>
+
+<h3>蟹蟹 —— 越跌越兴奋，反弹止盈</h3>
+<p><strong>本周操作：暴跌日逆势买入、玉衡反弹止盈</strong></p>
+
+<p><strong>周六（8/8）</strong>：减仓天枢，加仓玉衡："天枢看样子还会继续跌。"</p>
+
+<p><strong>周一（8/10）</strong>：玉衡大跌、天枢深跌时各买一点，理由相当硬核："这次跌这么猛，总要涨一点回来""越跌越兴奋"；同时卖出摇光："虽然涨了一点，但是我坚信它绝对不是啥好鸟。"</p>
+
+<p><strong>周二（8/11）</strong>：加仓天枢，继续减仓摇光。</p>
+
+<p><strong>周三（8/12）</strong>：玉衡反弹后卖出止盈："刚经历了大涨，及时止盈，看未来几天的趋势再考虑买进。"</p>
+
+<p><strong>周五（8/14）</strong>：又买一点摇光："摇光浅买一点，虽然每次都让人笑掉大牙。玉衡！再跌一天我就买！"</p>
+
+<p><strong>评价：</strong>蟹蟹是本周操作最活跃的选手（7 笔）。周一在暴跌日逆势买入玉衡和天枢，周三玉衡反弹后及时止盈——"越跌越兴奋"式抄底加反弹止盈，这套打法这周收获不小。整体盈利可观，稳居第三。</p>
+
+<hr>
+
+<h3>飞鸟 —— 清仓摇光，转入天枢</h3>
+<p><strong>本周操作：清仓摇光、连续买入天枢</strong></p>
+
+<p><strong>周日（8/9）</strong>：清仓摇光："感觉冲不上高点要落下去了，交易量也开始萎缩，清仓了，跌了可以再买。"</p>
+
+<p><strong>周一（8/10）</strong>：买入天枢："抄底。" <strong>周三（8/12）</strong>：再加天枢："跌了就买点。"</p>
+
+<p><strong>评价：</strong>飞鸟这周做了个大换仓：周日清仓摇光，理由是"冲不上高点、量能萎缩"，随后把主要精力转到天枢，周一、周三连续买入，成本越摊越低。方向明确、执行干脆，整体净值在回升。</p>
+
+<hr>
+
+<h3>鹅蛋 —— 一路加仓天枢，摇光小赚止盈</h3>
+<p><strong>本周操作：分批加仓天枢、止盈摇光</strong></p>
+
+<p><strong>周一（8/10）</strong>：加仓天枢："跌了加仓"；买入摇光："看着好像还能涨。"</p>
+
+<p><strong>周四（8/13）</strong>：加仓天枢："平均一下我的股价，感觉可以涨。" <strong>周五（8/14）</strong>：加仓天枢："天书应该还能想一些"；同时卖出摇光止盈："感觉瑶光有点风险先卖掉一些挣点钱。"</p>
+
+<p><strong>评价：</strong>鹅蛋本周依然是稳健路线：天枢越跌越买、分批摊低成本，摇光涨上来就止盈一部分。全周节奏连贯、不折腾，净值稳步增值。</p>
+
+<hr>
+
+<h3>若梦 —— 新加入，先试试水</h3>
+<p><strong>本周操作：小仓位试水建仓</strong></p>
+
+<p><strong>周三（8/12）</strong>：买入天枢、摇光："试试水。"</p>
+
+<p><strong>周四（8/13）</strong>：买入玉衡："我感觉他还能继续涨！" <strong>周五（8/14）</strong>：加仓天枢、玉衡："想买。"</p>
+
+<p><strong>评价：</strong>若梦是第六周新加入的选手，周三开始试探性买入，随后逐步加大投入，重点配置了天枢，也参与了玉衡的反弹。初来乍到没有贸然加码，先熟悉节奏，操作谨慎。</p>
+
+<hr>
+
+<h2>🔍 本周关键转折</h2>
+
+<h3>玉衡的"深V"与 225% 累计涨幅</h3>
+
+<p>第六周最惊险的一幕发生在周日（8/9）：玉衡材料从 53.95 一路下杀，盘中最低到 36.45，最深回撤一度超过 30%。但随后五个交易日它连续反弹，周六收 54.80，几乎完全收复失地。</p>
+
+<table>
+  <tr>
+    <th>周次</th>
+    <th>玉衡价格区间</th>
+    <th>周涨幅</th>
+    <th>累计涨幅</th>
+  </tr>
+  <tr>
+    <td>第1周</td>
+    <td>16.84 → 19.10</td>
+    <td class="positive">+13%</td>
+    <td class="positive">+13%</td>
+  </tr>
+  <tr>
+    <td>第2周</td>
+    <td>19.10 → 25.50</td>
+    <td class="positive">+33%</td>
+    <td class="positive">+51%</td>
+  </tr>
+  <tr>
+    <td>第3周</td>
+    <td>25.50 → 30.95</td>
+    <td class="positive">+27.6%</td>
+    <td class="positive">+84%</td>
+  </tr>
+  <tr>
+    <td>第4周</td>
+    <td>30.95 → 39.65</td>
+    <td class="positive">+28.1%</td>
+    <td class="positive">+135%</td>
+  </tr>
+  <tr>
+    <td>第5周</td>
+    <td>39.65 → 53.95</td>
+    <td class="positive">+36.1%</td>
+    <td class="positive">+220%</td>
+  </tr>
+  <tr>
+    <td>第6周</td>
+    <td>53.95 → 54.80</td>
+    <td class="positive">+1.6%</td>
+    <td class="positive"><strong>+225%</strong></td>
+  </tr>
+</table>
+
+<p>这周的市场教会所有人两件事：<strong>再强的趋势也会有剧烈的洗盘</strong>——玉衡一周内能下杀 30% 再涨回来；同时<strong>暴跌中的选择决定了节奏</strong>——受受止损离场又精准买回，蟹蟹逆势抄底、反弹止盈，飞鸟则把仓位从摇光换到了天枢。谁能在恐慌里保持判断、在反弹时跟对节奏，谁就能站在净值曲线的上方。</p>
+
+<p style="text-align:center;color:#94a3b8;margin-top:24px;font-size:13px;">📌 提示：本周报由 AI 生成，仅供娱乐，别太当真~</p>
+
+<p style="text-align:center;color:#94a3b8;margin-top:8px;font-size:13px;">下周六见 🎮</p>
+
+</body>
+</html>
