@@ -69,7 +69,7 @@
   <div class="strip" id="strip"></div>
   <div class="table-wrap"><div class="grid-wrap" id="gridDesktop"></div></div>
   <div id="gridMobile"></div>
-  <div class="foot">红涨绿跌 · 买入红标 / 卖出绿标 · 持仓为操作前持仓，仅显示有无不显示数量 · 最新数据每日 9:00 解锁</div>
+  <div class="foot">红涨绿跌 · 买入红标 / 卖出绿标 · 持仓为操作前持仓，仅显示有无不显示数量 · 最新数据每日 0:00 解锁</div>
 </div>
 <script>
 const P = {"phaseStartDay":188,"phaseStartIso":"2026-08-10","phaseStartLabel":"8/10","latestDay":211,"latestDate":"2026-08-15","startPrices":{"A":3.72,"B":43.2,"C":26.72},"days":[{"day":191,"iso":"2026-08-11","label":"8/11","prices":{"A":{"p":3.73,"c":0.5},"B":{"p":41.95,"c":-2.6},"C":{"p":27.06,"c":0.0}}},{"day":196,"iso":"2026-08-12","label":"8/12","prices":{"A":{"p":3.72,"c":-0.3},"B":{"p":48.2,"c":14.9},"C":{"p":26.57,"c":-1.8}}},{"day":201,"iso":"2026-08-13","label":"8/13","prices":{"A":{"p":3.8,"c":2.2},"B":{"p":51.55,"c":7.0},"C":{"p":27.08,"c":1.9}}},{"day":206,"iso":"2026-08-14","label":"8/14","prices":{"A":{"p":3.84,"c":1.1},"B":{"p":48.65,"c":-5.6},"C":{"p":27.12,"c":0.1}}},{"day":211,"iso":"2026-08-15","label":"8/15","prices":{"A":{"p":3.82,"c":-0.5},"B":{"p":54.8,"c":12.6},"C":{"p":27.9,"c":2.9}}}],"ops":[{"name":"受受","day":196,"iso":"2026-08-12","label":"8/12","type":"buy","sid":"C","stock":"摇光电子","is_clear":false,"held":["天枢能源"]},{"name":"受受","day":201,"iso":"2026-08-13","label":"8/13","type":"buy","sid":"B","stock":"玉衡材料","is_clear":false,"held":["天枢能源","摇光电子"]},{"name":"蟹蟹","day":191,"iso":"2026-08-11","label":"8/11","type":"buy","sid":"A","stock":"天枢能源","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"蟹蟹","day":191,"iso":"2026-08-11","label":"8/11","type":"sell","sid":"C","stock":"摇光电子","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"蟹蟹","day":196,"iso":"2026-08-12","label":"8/12","type":"sell","sid":"B","stock":"玉衡材料","is_clear":true,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"蟹蟹","day":206,"iso":"2026-08-14","label":"8/14","type":"buy","sid":"C","stock":"摇光电子","is_clear":false,"held":["天枢能源","摇光电子"]},{"name":"飞鸟","day":196,"iso":"2026-08-12","label":"8/12","type":"buy","sid":"A","stock":"天枢能源","is_clear":false,"held":["天枢能源"]},{"name":"鹅蛋","day":201,"iso":"2026-08-13","label":"8/13","type":"buy","sid":"A","stock":"天枢能源","is_clear":false,"held":["天枢能源","摇光电子"]},{"name":"鹅蛋","day":206,"iso":"2026-08-14","label":"8/14","type":"buy","sid":"A","stock":"天枢能源","is_clear":false,"held":["天枢能源","摇光电子"]},{"name":"鹅蛋","day":206,"iso":"2026-08-14","label":"8/14","type":"sell","sid":"C","stock":"摇光电子","is_clear":false,"held":["天枢能源","摇光电子"]},{"name":"若梦","day":196,"iso":"2026-08-12","label":"8/12","type":"buy","sid":"A","stock":"天枢能源","is_clear":false,"held":[]},{"name":"若梦","day":196,"iso":"2026-08-12","label":"8/12","type":"buy","sid":"C","stock":"摇光电子","is_clear":false,"held":["天枢能源"]},{"name":"若梦","day":201,"iso":"2026-08-13","label":"8/13","type":"buy","sid":"B","stock":"玉衡材料","is_clear":false,"held":["天枢能源","摇光电子"]},{"name":"若梦","day":206,"iso":"2026-08-14","label":"8/14","type":"buy","sid":"A","stock":"天枢能源","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]},{"name":"若梦","day":206,"iso":"2026-08-14","label":"8/14","type":"buy","sid":"B","stock":"玉衡材料","is_clear":false,"held":["天枢能源","玉衡材料","摇光电子"]}],"players":["受受","小玉","蟹蟹","飞鸟","鹅蛋","若梦"]};
@@ -85,7 +85,6 @@ function fmtSigned(n){ return (n >= 0 ? '+' : '-') + fmt(Math.abs(n)); }
 
 function getResolvedDate(){
   var now = new Date();
-  if (now.getHours() < 9) now.setDate(now.getDate() - 1);
   var s = now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate());
   if (s > P.latestDate) s = P.latestDate;
   return s;
@@ -111,7 +110,7 @@ function renderNotice(resolved, locked){
   var el = document.getElementById('lockNotice');
   if (locked){
     el.className = 'lock-notice locked';
-    el.innerHTML = '🔒 最新（' + fmtCN(P.latestDate) + '）数据 9:00 解锁 · 当前显示至 ' + fmtCN(resolved);
+    el.innerHTML = '🔒 最新（' + fmtCN(P.latestDate) + '）数据 0:00 解锁 · 当前显示至 ' + fmtCN(resolved);
   } else {
     el.className = 'lock-notice open';
     el.innerHTML = '✅ 全部数据已解锁 · 截至 ' + fmtCN(P.latestDate);

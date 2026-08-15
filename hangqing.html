@@ -175,9 +175,6 @@ for (const f of folders) {
 
 function isLocked(d) {
   if (d > TODAY) return true;
-  if (d.toDateString() === TODAY.toDateString()) {
-    if (TODAY.getHours() < 9) return true;
-  }
   return false;
 }
 function isToday(d) { return d.toDateString() === TODAY.toDateString(); }
