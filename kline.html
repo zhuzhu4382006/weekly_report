@@ -149,6 +149,15 @@ body {
     <option value="B">玉衡材料</option>
     <option value="C">摇光电子</option>
   </select>
+  <select class="stock-selector" id="playerSelector" style="max-width:110px;">
+    <option value="">选手：无</option>
+    <option value="小玉">选手：小玉</option>
+    <option value="飞鸟">选手：飞鸟</option>
+    <option value="蟹蟹">选手：蟹蟹</option>
+    <option value="受受">选手：受受</option>
+    <option value="鹅蛋">选手：鹅蛋</option>
+    <option value="若梦">选手：若梦</option>
+  </select>
 </div>
 
 <div class="price-bar" id="priceBar">
@@ -163,7 +172,7 @@ body {
 </div>
 
 <div class="lock-notice" id="lockNotice" style="display:none;"></div>
-<div id="debugBar" style="background:#1e2029;padding:4px 16px;font-size:12px;color:#6b7280;border-bottom:1px solid #2a2d36;display:flex;align-items:center;gap:10px;">
+<div id="debugBar" style="display:none;">
   <span id="debugDayLabel">游戏日: 111</span>
   <span id="debugCompare"></span>
 </div>
@@ -219,14 +228,16 @@ function getTodayGameDay() {
 //  数据加载
 // ============================================================
 let rawData = null;
+let tradeData = null;   // player_trades.json
 let currentStock = 'A';
+let currentPlayer = ''; // 空 = 不显示买卖点
 let currentDay = 9999; // 默认显示全部
 let currentMode = 'daily'; // 'daily' | 'weekly'
 let zoomStart = 80;
 let zoomEnd = 100;
 
 // 从 URL hash 读取隐蔽参数（base64 编码的游戏日）
-// 用法: kline.html#MTE2 （"116" 的 base64）— 仅限组织者使用
+// 用法: kline.html#MTE2 （"116" 的 base64）— 组织者预留,选手不知道
 const HASH_DAY = (function() {
   const h = window.location.hash.replace('#', '');
   if (!h) return null;
@@ -239,7 +250,7 @@ const HASH_DAY = (function() {
 if (HASH_DAY) {
   currentDay = HASH_DAY;
 } else {
-  // 没有 hash 参数时，根据今天日期自动选择游戏日
+  // 没有 hash 参数时，根据今天日期自动选择游戏日（选手视角:只能看到今天为止的K线）
   currentDay = getTodayGameDay();
 }
 
@@ -249,9 +260,15 @@ const stockParam = urlParams.get('stock');
 
 async function loadData() {
   try {
-    const resp = await fetch('kline_data.json');
+    const [resp, respT] = await Promise.all([
+      fetch('kline_data.json'),
+      fetch('player_trades_public.json')
+    ]);
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     rawData = await resp.json();
+    if (respT.ok) {
+      tradeData = await respT.json();
+    }
     document.getElementById('chartLoading').style.display = 'none';
     document.getElementById('chartWrap').style.display = 'block';
     renderChart();
@@ -327,6 +344,95 @@ function aggregateWeekly(dailyData) {
   return Object.values(weeks).sort((a, b) => a.date.localeCompare(b.date));
 }
 
+// 把某选手在"当前股票"上的交易转成 ECharts markLine 数据
+// 返回 { buyLines, sellLines } 或 null（每条线:起点在K线上/下边缘,向图外延伸一小段,端点标 B/S）
+function buildTradeMarks(chartData, stockId) {
+  if (!tradeData || !currentPlayer) return null;
+  const playerTrades = tradeData[currentPlayer];
+  if (!playerTrades) return null;
+  const trades = playerTrades[stockId];
+  if (!trades || trades.length === 0) return null;
+
+  const buyLines = [];
+  const sellLines = [];
+
+  for (const t of trades) {
+    // 在 chartData 中找对应日期（日K直接匹配；周K用该周首日匹配）
+    let idx = chartData.findIndex(d => d.date === t.d);
+    if (idx < 0) {
+      const wkStart = getWeekStart(t.d);
+      idx = chartData.findIndex(d => d.date === wkStart);
+      if (idx < 0) continue;
+    }
+    const bar = chartData[idx];
+    const meta = { day: t.d, qty: t.qty, price: t.price, reason: t.reason || '', type: t.type };
+    if (t.type === 'buy') {
+      // 向上延伸: 基于该K线振幅的 35%, 放大后仍紧贴K线不易被Y轴裁掉
+      const range = Math.max(bar.high - bar.low, 0.01);
+      buyLines.push({
+        idx: idx,
+        y0: bar.high,
+        y1: bar.high + range * 0.35,
+        meta: meta,
+      });
+    } else {
+      const range = Math.max(bar.high - bar.low, 0.01);
+      sellLines.push({
+        idx: idx,
+        y0: bar.low,
+        y1: bar.low - range * 0.35,
+        meta: meta,
+      });
+    }
+  }
+
+  if (buyLines.length === 0 && sellLines.length === 0) return null;
+
+  return {
+    buyLines: buyLines,
+    sellLines: sellLines,
+  };
+}
+
+// 把 buildTradeMarks 的结果转换成 ECharts markLine.data 数组
+// marks.buyLines/sellLines 中的每一项: { idx, y0, y1, meta }
+function tradeMarksToMarkLineData(marks) {
+  const out = [];
+  function push(list, color, label, pos) {
+    for (const l of list) {
+      if (l.idx == null) continue;
+      out.push([
+        { coord: [l.idx, l.y0] },
+        {
+          coord: [l.idx, l.y1],
+          lineStyle: { color: color, type: 'dashed', width: 1.2 },
+          label: {
+            show: true,
+            formatter: label,
+            position: pos,
+            color: color,
+            fontSize: 13,
+            fontWeight: 'bold',
+            distance: 2,
+          },
+          tooltip: {
+            formatter: function() {
+              const m = l.meta;
+              const cls = m.type === 'buy' ? '买入' : '卖出';
+              const col = m.type === 'buy' ? '#ef5350' : '#26a69a';
+              return '<span style="font-size:12px;font-weight:600;color:' + col + ';">' + cls + '</span>' +
+                     '<div style="font-size:11px;color:#9aa0a6;">' + m.day + ' · 收盘价 ¥' + m.price + '</div>';
+            }
+          }
+        }
+      ]);
+    }
+  }
+  if (marks.buyLines) push(marks.buyLines, '#ef5350', 'B', 'end');
+  if (marks.sellLines) push(marks.sellLines, '#26a69a', 'S', 'end');
+  return out;
+}
+
 // ============================================================
 //  渲染
 // ============================================================
@@ -365,7 +471,7 @@ function renderChart() {
   if (visibleData.length === 0) {
     document.getElementById('priceBar').style.display = 'none';
     document.getElementById('chartWrap').innerHTML =
-      '<div class="loading" style="height:400px;"><span>暂无数据（游戏日 ' + currentDay + '）</span></div>';
+      '<div class="loading" style="height:400px;"><span>暂无数据</span></div>';
     return;
   }
 
@@ -377,13 +483,12 @@ function renderChart() {
     dataLabel = '周';
   }
 
-  // 更新锁提示
+  // 更新锁提示（对选手只显示到日期,不显示游戏日编号）
   const notice = document.getElementById('lockNotice');
   const lastVisible = chartData[chartData.length - 1];
   if (lockedDays > 0) {
     notice.innerHTML = '🔒 已锁定：只显示到 <strong>' + lastVisible.date +
-      '</strong>（当前游戏日 ' + currentDay + '，共 ' + chartData.length +
-      ' ' + dataLabel + '，后面 ' + lockedDays + ' 交易日已锁定）';
+      '</strong>（后面 ' + lockedDays + ' 个交易日已锁定,每日0点解锁）';
   } else {
     notice.innerHTML = '显示全部 ' + chartData.length + ' ' + dataLabel +
       (currentMode === 'weekly' ? '（' + visibleData.length + ' 个交易日）' : '');
@@ -452,6 +557,12 @@ function renderChart() {
   // ===== ECharts =====
   const dom = document.getElementById('klineChart');
   const chart = echarts.init(dom, 'dark');
+
+  // 买卖点标记（当前选中选手时为 candlestick 附加 markLine 虚线）
+  var tradeMarks = null;
+  if (currentPlayer) {
+    tradeMarks = buildTradeMarks(chartData, currentStock);
+  }
 
   const option = {
     backgroundColor: '#111216',
@@ -559,6 +670,14 @@ function renderChart() {
           borderColor: '#ef5350',
           borderColor0: '#26a69a',
         },
+        markLine: (tradeMarks ? {
+          symbol: ['none', 'none'],
+          silent: false,
+          animation: false,
+          clip: false,
+          lineStyle: { type: 'dashed', width: 1.2 },
+          data: tradeMarksToMarkLineData(tradeMarks),
+        } : undefined),
       },
       {
         name: 'MA5',
@@ -672,6 +791,11 @@ function renderChart() {
 // ============================================================
 document.getElementById('stockSelector').addEventListener('change', function() {
   currentStock = this.value;
+  renderChart();
+});
+
+document.getElementById('playerSelector').addEventListener('change', function() {
+  currentPlayer = this.value;
   renderChart();
 });
 
@@ -813,6 +937,17 @@ loadData();
 if (stockParam && ["A","B","C"].includes(stockParam)) {
   currentStock = stockParam;
   document.getElementById("stockSelector").value = stockParam;
+}
+
+// 从 URL 恢复选手选择（可选，便于把链接发给对应选手/组织者复盘）
+const playerParam = urlParams.get('player');
+if (playerParam && document.getElementById("playerSelector")) {
+  const sel = document.getElementById("playerSelector");
+  const matched = Array.from(sel.options).some(o => o.value === playerParam);
+  if (matched) {
+    currentPlayer = playerParam;
+    sel.value = playerParam;
+  }
 }
 
 // 更新调试栏游戏日显示
