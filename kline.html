@@ -162,6 +162,7 @@ body {
 
 <div class="price-bar" id="priceBar">
   <div class="price-current" id="priceCurrent">--</div>
+  <div class="price-change" id="priceChange" style="display:none;">--</div>
   <div class="price-detail" id="priceDetail">
     <span><span class="label">开</span><span class="val" id="pdOpen">--</span></span>
     <span><span class="label">高</span><span class="val" id="pdHigh">--</span></span>
@@ -172,6 +173,10 @@ body {
 </div>
 
 <div class="lock-notice" id="lockNotice" style="display:none;"></div>
+<div id="dailyCompare" style="background:#1e2029;padding:6px 16px;font-size:13px;color:#e8eaed;border-bottom:1px solid #2a2d36;display:flex;align-items:center;gap:10px;">
+  <span id="cmpToday">--</span>
+  <span id="cmpPrev">--</span>
+</div>
 <div id="debugBar" style="display:none;">
   <span id="debugDayLabel">游戏日: 111</span>
   <span id="debugCompare"></span>
@@ -433,6 +438,16 @@ function tradeMarksToMarkLineData(marks) {
   return out;
 }
 
+// 游戏日 → 现实日期（2026-07-04 起，每5个游戏日=1天）
+function realDateOf(day) {
+  var base = new Date(2026, 6, 4); // 2026-07-04
+  var realDay = (day - 1) / 5;     // 0-based
+  base.setDate(base.getDate() + realDay);
+  var mm = String(base.getMonth() + 1).padStart(2, '0');
+  var dd = String(base.getDate()).padStart(2, '0');
+  return base.getFullYear() + '-' + mm + '-' + dd;
+}
+
 // ============================================================
 //  渲染
 // ============================================================
@@ -503,6 +518,14 @@ function renderChart() {
   var fc = document.getElementById('fixedClose');
   if (fc) fc.textContent = '收盘: ¥' + fmt(last.close);
 
+  // 大字旁当日涨幅徽标
+  var pcEl = document.getElementById('priceChange');
+  if (pcEl) {
+    pcEl.style.display = 'inline-block';
+    pcEl.className = 'price-change ' + (change >= 0 ? 'up' : 'down');
+    pcEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+  }
+
   // 对比上一游戏日（通过 gameDateMap 映射到股票数据日期）
   var compPrevDay = (currentDay >= 6 && currentDay < 9999) ? currentDay - 5 : null;
   if (compPrevDay !== null) {
@@ -521,6 +544,19 @@ function renderChart() {
       var compChg = (compCurrR - compPrevR) / compPrevR * 100;
       var compColor = compChg >= 0 ? '#ef5350' : '#26a69a';
       var compSign = compChg >= 0 ? '+' : '';
+
+      // 选手可见: 今日 vs 昨日 对比条（带涨幅,现实日期,不打游戏日编号）
+      var todayEl = document.getElementById("cmpToday");
+      var prevEl = document.getElementById("cmpPrev");
+      if (todayEl && prevEl) {
+        var nowReal = realDateOf(currentDay).replace(/(\d{4})-(\d{2})-(\d{2})/, '$2/$3');
+        var prevReal = realDateOf(compPrevDay).replace(/(\d{4})-(\d{2})-(\d{2})/, '$2/$3');
+        todayEl.innerHTML = '<span style="color:#e8eaed;">当前' + nowReal + '日</span> ¥' + compCurrDisp;
+        prevEl.innerHTML = '<span style="color:#6b7280;">vs 第' + prevReal + '日</span> ¥' + compPrevDisp +
+          ' <span style="color:' + compColor + ';font-weight:600;">' + compSign + compChg.toFixed(2) + '%</span>';
+      }
+
+      // 组织者调试栏(仍隐藏,含游戏日编号)
       document.getElementById("debugCompare").innerHTML =
         '<span style="color:#e8eaed;">当前 ' + currentDay + '日</span> ¥' + compCurrDisp +
         ' <span style="color:#6b7280;">vs 第' + compPrevDay + '日</span> ¥' + compPrevDisp +
@@ -581,14 +617,7 @@ function renderChart() {
       padding: 0,
       extraCssText: 'box-shadow:none;',
       formatter: function(params) {
-        const p = params;
-        const idx = p[0].dataIndex;
-        if (idx > 0 && idx < chartData.length) {
-          var pc = chartData[idx - 1].close;
-          var cc = chartData[idx].close;
-          var chg = (cc - pc) / pc * 100;
-          return '<span style="font-size:11px;color:#9aa0a6;margin-right:2px;">涨跌</span><span style="font-size:12px;font-weight:600;color:' + (chg >= 0 ? '#ef5350' : '#26a69a') + ';">' + (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%</span>';
-        }
+        // 自定义 tooltip 去掉了"涨跌"行, 返回空白(悬停仍联动顶部价格栏/均线)
         return '';
       }
     },
@@ -774,6 +803,11 @@ function renderChart() {
       const chg2 = prev2 ? ((d.close - prev2.close) / prev2.close * 100) : 0;
       document.getElementById('priceCurrent').textContent = '¥' + fmt(d.close);
 
+      var pcEl2 = document.getElementById('priceChange');
+      if (pcEl2) {
+        pcEl2.className = 'price-change ' + (chg2 >= 0 ? 'up' : 'down');
+        pcEl2.textContent = (chg2 >= 0 ? '+' : '') + chg2.toFixed(2) + '%';
+      }
 
       document.getElementById('pdOpen').textContent = fmt(d.open);
       document.getElementById('pdHigh').textContent = fmt(d.high);
