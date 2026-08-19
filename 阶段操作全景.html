@@ -156,7 +156,6 @@ function renderGrid(resolved, locked){
   for (var i = 0; i < vdays.length; i++){
     var d = vdays[i];
     var opsToday = vops.filter(function(o){ return o.day === d.day; });
-    if (!opsToday.length) continue;
     var prices = '';
     for (var sid of ['A','B','C']){
       var px = d.prices[sid];
@@ -187,7 +186,6 @@ function renderGrid(resolved, locked){
   for (var i = 0; i < vdays.length; i++){
     var d = vdays[i];
     var opsToday = vops.filter(function(o){ return o.day === d.day; });
-    if (!opsToday.length) continue;
     var priceParts = [];
     for (var sid of ['A','B','C']){
       var px = d.prices[sid];
@@ -197,6 +195,9 @@ function renderGrid(resolved, locked){
     }
     mhtml += '<div class="mday">';
     mhtml += '<div class="mday-head"><div class="mday-date">' + d.label + ' <span class="mday-num">第' + d.day + '日</span></div><div class="mday-prices">' + priceParts.join(' · ') + '</div></div>';
+    if (!opsToday.length){
+      mhtml += '<div class="mplayer" style="color:#9aa1ad;font-size:13px;">当日无人操作</div>';
+    }
     for (var p of P.players){
       var ops = opsToday.filter(function(o){ return o.name === p; });
       if (!ops.length) continue;
