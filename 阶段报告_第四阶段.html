@@ -50,14 +50,14 @@ hr { border: none; border-top: 1px solid #e2e8f0; margin: 28px 0; }
 </head>
 <body>
 
-<!-- ===== 日期锁定: 8/22(周六) 0:00 前对选手隐藏 ===== -->
+<!-- ===== 日期锁定: 8/23(周日) 0:00 前对选手隐藏 ===== -->
 <div class="unlock-overlay" id="unlockOverlay">
   <div class="lock-emoji">🔒</div>
   <div class="lock-title">阶段报告已锁定</div>
-  <div class="lock-sub">将于 <strong>8月22日（周六）0:00</strong> 自动解锁</div>
+  <div class="lock-sub">将于 <strong>8月23日（周日）0:00</strong> 自动解锁</div>
 </div>
 <script>
-  var UNLOCK_TIME = new Date(2026, 7, 22, 0, 0, 0); // 8月22日(周六) 0:00
+  var UNLOCK_TIME = new Date(2026, 7, 23, 0, 0, 0); // 8月23日(周日) 0:00
   var PREVIEW = window.location.hash.indexOf('preview') >= 0;
   function updateLock(){
     var el = document.getElementById('unlockOverlay');
