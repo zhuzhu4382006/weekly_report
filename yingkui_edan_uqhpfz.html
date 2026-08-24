@@ -60,9 +60,10 @@ body {
 
 /* ---- 最近交易 ---- */
 .card-trade-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; gap:10px; flex-wrap:wrap; }
-.trade-table { width:100%; border-collapse:collapse; font-size:13px; }
+.table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.trade-table { width:100%; border-collapse:collapse; font-size:13px; min-width:640px; }
 .trade-table th { background:#f3f5f9; font-weight:700; color:#4a4f63; padding:8px 10px; text-align:center; border-bottom:2px solid #e2e6ee; white-space:nowrap; }
-.trade-table td { padding:8px 10px; text-align:center; border-bottom:1px solid #eef0f4; }
+.trade-table td { padding:8px 10px; text-align:center; border-bottom:1px solid #eef0f4; white-space:nowrap; }
 .trade-table td.tl { text-align:left; }
 .trade-table .b { color:#e74c3c; font-weight:700; }
 .trade-table .s { color:#27ae60; font-weight:700; }
