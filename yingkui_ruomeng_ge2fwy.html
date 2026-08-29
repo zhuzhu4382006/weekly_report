@@ -129,7 +129,7 @@ body {
     <div class="avatar">👤</div>
     <div>
       <div class="title">📅 若梦 · 盈亏日历</div>
-      <div class="subtitle">模拟炒股 · 仅本人可见 · 每日 0:00 解锁最新</div>
+      <div class="subtitle">模拟炒股 · 仅本人可见 · 每日 22:00 解锁最新</div>
     </div>
   </div>
 
@@ -184,9 +184,13 @@ function fmtCN(dateStr){
   return parseInt(a[1],10) + '月' + parseInt(a[2],10) + '日';
 }
 
-// ---------- 解锁判定(与 K线页一致:每天 0 点后即解锁当天) ----------
+// ---------- 解锁判定(N日22:00解锁 N+1 日行情;22:00前显示当天) ----------
 function getResolvedDate(){
   var now = new Date();
+  // 22:00 后:解锁第二天的行情,日期前进一天;22:00 前:显示当天行情
+  if (now.getHours() >= 22) {
+    now.setDate(now.getDate() + 1);
+  }
   var s = now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate());
   if (s > P.latestDate) s = P.latestDate;
   return s;
@@ -272,7 +276,7 @@ function renderNotice(locked, resolved){
   var el = document.getElementById('lockNotice');
   if (locked){
     el.className = 'lock-notice locked';
-    el.innerHTML = '🔒 已锁定:只显示到 <strong>' + fmtCN(resolved) + '</strong> · 最新(' + fmtCN(P.latestDate) + ')数据 <strong>0:00</strong> 解锁';
+    el.innerHTML = '🔒 已锁定:只显示到 <strong>' + fmtCN(resolved) + '</strong> · 最新(' + fmtCN(P.latestDate) + ')数据 <strong>22:00</strong> 解锁';
   } else {
     el.className = 'lock-notice open';
     el.innerHTML = '✅ 全部数据已解锁 · 截至 ' + fmtCN(P.latestDate);
@@ -324,7 +328,7 @@ function renderSummary(resolved, locked){
       html += '<div class="lock-line">(空仓)</div>';
     }
   } else {
-    html += '<div class="lock-line">🔒 今日持仓明细 0:00 解锁</div>';
+    html += '<div class="lock-line">🔒 今日持仓明细 22:00 解锁</div>';
   }
 
   document.getElementById('summaryCard').innerHTML = html;
@@ -388,7 +392,7 @@ function renderStats(resolved, locked){
       splHtml += '<div><span style="margin-right:8px;">' + stockNames[si] + '：<span class="' + tcls + '" style="font-weight:600;">' + tsign + fmtMoney(Math.abs(spl.total)) + '</span></span><span style="font-size:11px;color:#8a8fa3;">（已实现 ' + (spl.realized >= 0 ? '+' : '-') + fmtMoney(Math.abs(spl.realized)) + ' ｜ 未实现 ' + (spl.unrealized >= 0 ? '+' : '-') + fmtMoney(Math.abs(spl.unrealized)) + '）</span></div>';
     }
   } else {
-    splHtml = '<div class="lock-line">🔒 单支股票盈亏 0:00 解锁</div>';
+    splHtml = '<div class="lock-line">🔒 单支股票盈亏 22:00 解锁</div>';
   }
   html += '<div class="pstat" style="grid-column:1/-1;"><div class="pstat-label">📈 单支股票盈亏</div><div style="font-size:13px;line-height:2;margin-top:4px;">' + splHtml + '</div></div>';
 

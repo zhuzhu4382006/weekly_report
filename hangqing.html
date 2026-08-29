@@ -174,8 +174,10 @@ for (const f of folders) {
 }
 
 function isLocked(d) {
-  if (d > TODAY) return true;
-  return false;
+  // 每天 22:00 后解锁第二天的行情:22:00 前可见到今天,22:00 后可见到明天
+  const cutoff = new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate());
+  if (TODAY.getHours() >= 22) cutoff.setDate(cutoff.getDate() + 1);
+  return d > cutoff;
 }
 function isToday(d) { return d.toDateString() === TODAY.toDateString(); }
 
