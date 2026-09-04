@@ -340,10 +340,18 @@ function renderPhases(resolved){
     var ph = P.phases[i];
     var rate = ph.rate, endNw = ph.endNw, endLabel = ph.end ? fmtCN(ph.end) : '';
     if (ph.ongoing){
-      var acc = getAcc(resolved);
-      endNw = acc.nw || 0;
-      endLabel = fmtCN(resolved);
-      rate = ph.startNw > 0 ? (endNw - ph.startNw) / ph.startNw * 100 : 0;
+      // 新阶段刚发薪时,startNw 已含工资,但发薪后的可见快照可能还没解锁;
+      // 若当前可见日期尚未越过阶段起点,就显示起点本身(0.00%),避免把"未含工资的旧净值"和"含工资的起点"硬比出假亏损。
+      if (resolved > ph.start){
+        var acc = getAcc(resolved);
+        endNw = acc.nw || ph.startNw;
+        endLabel = fmtCN(resolved);
+        rate = ph.startNw > 0 ? (endNw - ph.startNw) / ph.startNw * 100 : 0;
+      } else {
+        endNw = ph.startNw;
+        endLabel = fmtCN(ph.start);
+        rate = 0;
+      }
     }
     var cls = rate >= 0 ? 'up' : 'down';
     var name = '第' + ph.n + '阶段' + (ph.ongoing ? ' · 进行中' : '');
