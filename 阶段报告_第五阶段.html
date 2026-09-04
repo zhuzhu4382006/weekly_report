@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第五阶段阶段报告</title>
+<style>
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  max-width: 720px; margin: 0 auto; padding: 30px 20px 60px;
+  background: #fafbfc; color: #1e293b; line-height: 1.8; font-size: 15px;
+}
+h1 { text-align: center; font-size: 24px; margin-bottom: 6px; }
+h1 + p { text-align: center; color: #64748b; margin-bottom: 32px; font-size: 14px; }
+h2 { font-size: 18px; margin-top: 36px; padding-bottom: 8px; border-bottom: 2px solid #2563eb; }
+h3 { font-size: 16px; margin-top: 24px; }
+table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+th, td { padding: 9px 12px; text-align: center; border-bottom: 1px solid #e2e8f0; }
+th { background: #f1f5f9; font-weight: 600; color: #475569; }
+td:first-child { font-weight: 500; white-space: nowrap; }
+td.left { text-align: left; }
+ul, ol { padding-left: 20px; }
+li { margin: 4px 0; }
+.highlight { background: #eff6ff; border-left: 3px solid #2563eb; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 12px 0; }
+.warn { background: #fef2f2; border-left: 3px solid #dc2626; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 12px 0; }
+blockquote { background: #f8fafc; border-left: 3px solid #94a3b8; padding: 8px 14px; margin: 8px 0; border-radius: 0 6px 6px 0; color: #475569; font-style: italic; }
+blockquote strong { color: #1e293b; }
+hr { border: none; border-top: 1px solid #e2e8f0; margin: 28px 0; }
+.rank { font-size: 22px; }
+.meta { text-align: center; color: #64748b; font-size: 14px; margin-bottom: 24px; }
+.quote-table td:first-child { white-space: nowrap; font-weight: 600; }
+.player-name { font-weight: 700; font-size: 16px; }
+.player-tag { display: inline-block; background: #eff6ff; color: #2563eb; font-size: 12px; padding: 0 8px; border-radius: 4px; margin-left: 6px; }
+.positive { color: #dc2626; }
+.negative { color: #16a34a; }
+@media (max-width: 500px) { body { padding: 16px 12px; font-size: 14px; } h1 { font-size: 20px; } }
+.unlock-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: #fafbfc;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; gap: 14px; padding: 30px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: #475569;
+}
+.unlock-overlay .lock-emoji { font-size: 56px; }
+.unlock-overlay .lock-title { font-size: 22px; font-weight: 700; color: #1e293b; }
+.unlock-overlay .lock-sub { font-size: 14px; color: #64748b; line-height: 1.9; }
+.unlock-overlay .lock-sub strong { color: #1e293b; }
+</style>
+</head>
+<body>
+
+<!-- ===== 日期锁定: 9/4(周五) 22:00 前对选手隐藏(与盈亏日历 22:00 解锁同步) ===== -->
+<div class="unlock-overlay" id="unlockOverlay">
+  <div class="lock-emoji">🔒</div>
+  <div class="lock-title">阶段报告已锁定</div>
+  <div class="lock-sub">将于 <strong>9月4日（周五）22:00</strong> 自动解锁</div>
+</div>
+<script>
+  var UNLOCK_TIME = new Date(2026, 8, 4, 22, 0, 0); // 9月4日(周五) 22:00
+  var PREVIEW = window.location.hash.indexOf('preview') >= 0;
+  function updateLock(){
+    var el = document.getElementById('unlockOverlay');
+    var locked = !PREVIEW && new Date() < UNLOCK_TIME;
+    if (el) el.style.display = locked ? 'flex' : 'none';
+  }
+  updateLock();
+  document.addEventListener('keydown', function(e){
+    if (e.ctrlKey && e.shiftKey && (e.key === 'K' || e.key === 'k')) { PREVIEW = true; updateLock(); }
+  });
+</script>
+
+<h1>🏆 第五阶段阶段报告</h1>
+<p class="meta">
+  <strong>现实时间：</strong>8月23日（周日）→ 9月5日（周六）<br>
+  <strong>市场环境：</strong>玉衡材料阶段内大跌 18.4%、收于 46.74;天枢能源温和回升 2.5%;摇光电子小幅回落 0.5%
+</p>
+
+<hr>
+
+<h2>📊 阶段收益率排名（全部选手公布）</h2>
+
+<table>
+  <tr>
+    <th>名次</th>
+    <th style="text-align:left;">选手</th>
+    <th>阶段收益率</th>
+    <th>奖金</th>
+  </tr>
+  <tr>
+    <td><span class="rank">🥇</span></td>
+    <td style="text-align:left;"><strong>飞鸟</strong></td>
+    <td class="positive"><strong>+1.47%</strong></td>
+    <td class="positive"><strong>20 元</strong></td>
+  </tr>
+  <tr>
+    <td><span class="rank">🥈</span></td>
+    <td style="text-align:left;"><strong>受受</strong></td>
+    <td class="positive"><strong>+1.01%</strong></td>
+    <td class="positive"><strong>10 元</strong></td>
+  </tr>
+  <tr>
+    <td><span class="rank">🥉</span></td>
+    <td style="text-align:left;"><strong>小玉</strong></td>
+    <td class="negative"><strong>-2.53%</strong></td>
+    <td class="positive"><strong>5 元</strong></td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td style="text-align:left;">鹅蛋</td>
+    <td class="negative">-4.16%</td>
+    <td>—</td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td style="text-align:left;">若梦</td>
+    <td class="negative">-5.17%</td>
+    <td>—</td>
+  </tr>
+  <tr>
+    <td>6</td>
+    <td style="text-align:left;">蟹蟹</td>
+    <td class="negative">-5.70%</td>
+    <td>—</td>
+  </tr>
+</table>
+
+<div class="highlight">
+  💡 奖金按《规则书》第十一条发放：第一名 20 元、第二名 10 元、第三名 5 元;收益率相同者平分奖金。<br>
+  本阶段 6 位选手均有参与操作、没有全程空仓的情况,全员参与评奖;无并列名次。
+</div>
+
+<hr>
+
+<h2>📈 阶段行情回顾（8/23 → 9/5）</h2>
+
+<table>
+  <tr>
+    <th>股票</th>
+    <th>阶段首日收盘</th>
+    <th>结算日收盘</th>
+    <th>阶段涨幅</th>
+  </tr>
+  <tr>
+    <td>天枢能源</td>
+    <td>3.915</td>
+    <td>4.014</td>
+    <td class="positive"><strong>+2.5%</strong></td>
+  </tr>
+  <tr>
+    <td><strong>玉衡材料</strong></td>
+    <td>57.30</td>
+    <td><strong>46.74</strong></td>
+    <td class="negative"><strong>-18.4%</strong></td>
+  </tr>
+  <tr>
+    <td>摇光电子</td>
+    <td>26.147</td>
+    <td>26.004</td>
+    <td class="negative">-0.5%</td>
+  </tr>
+</table>
+
+<p>阶段五最大的变量是玉衡的"滞涨转跌"。阶段开局玉衡还在 57 元一线高位横盘，<strong>8/24 一度冲到 58.40（阶段最高）</strong>，随后连续四天阴跌，8/28 探至 52.55；8/29 起短暂企稳反弹，9/1 反抽到 57.85，但<strong>9/2 再度掉头向下，9/3 跌至 53.35，9/4 单日大跌收于 47.70，结算日 9/5 续跌收于 46.74</strong>——阶段内从高点 58.40 回撤约 20%,是本阶段最剧烈的单边下跌段。</p>
+
+<p>天枢能源全阶段在 3.915-4.242 之间震荡上行，8/24 与 9/2-9/3 两度上攻 4.2 一线，结算日收 4.014，阶段 +2.5%。摇光电子窄幅震荡，8/31 摸到 27.011 的阶段高点后回落，结算日 26.004，阶段 -0.5%，守住了阶段内的相对平稳。</p>
+
+<hr>
+
+<h2>🧠 选手复盘分析</h2>
+
+<h3>飞鸟</h3>
+<p><strong>阶段操作：天枢逢跌分批买入、逢涨分批卖出，摇光两次小波段</strong></p>
+
+<p><strong>8/23</strong>：买入天枢（"跌了买点"）。<strong>8/24</strong>：卖出天枢与摇光："浮盈接近10%了,卖掉点""摇光到60日均线了可能是个压力位"。<strong>8/25</strong>：买回天枢："天枢最近走势比较强势,觉得依然会上涨";并买入摇光："买点摇光观察下能不能在26块企稳"。<strong>8/26、8/27</strong>：继续补仓天枢（"跌了补点"）。<strong>8/28</strong>：加摇光："跌了补点,会站稳26块"。<strong>8/29</strong>：卖出天枢（"涨了卖点"）。<strong>8/30</strong>：买回天枢、卖出摇光："放量下跌,感觉还得跌"。<strong>9/1、9/2</strong>：分批买回摇光（"跌了补点"/"跌了买点"）。<strong>9/3</strong>：卖出摇光："成交量上不来"。<strong>9/4</strong>：买入天枢（"跌了补点"）。</p>
+
+<p><strong>评价：</strong>飞鸟本阶段把"跌了买、涨了卖"的执行力发挥到极致——天枢来回做了五轮小波段，每一笔都踩在 4.0-4.1 的震荡区间里；摇光两次在 26 元附近建仓、在放量异动时离场，纪律清晰。玉衡的回落他没有参与，躲开了本阶段最大的坑，以 +1.47% 拿下个人首个阶段冠军。</p>
+
+<hr>
+
+<h3>受受</h3>
+<p><strong>阶段操作：阶段初补玉衡 → 9/1 见压力减仓 → 9/2 全面换仓摇光</strong></p>
+
+<p><strong>8/23</strong>：买入玉衡（"补仓"）。<strong>9/1</strong>：卖出玉衡："到压力位附近了"。<strong>9/2</strong>：清仓天枢与玉衡、买入摇光："追涨杀跌"。<strong>9/3</strong>：再加摇光（"追涨"）。</p>
+
+<p><strong>评价：</strong>受受是本阶段<strong>躲开玉衡下跌最漂亮的选手</strong>：8/23 他先按纪律在玉衡回踩时补仓，9/1 玉衡反抽到 57.85（阶段高点区域）时，他依据"到压力位"的判断果断减仓；9/2 又把剩余玉衡与天枢清出、系统性转向摇光。紧接着的 9/3-9/5，玉衡从 56 元一线急挫至 46.74——他的两次离场恰好踩在加速下跌之前，筹码全身而退，转身守住了阶段内相对平稳的摇光。压力位判断、分批离场、防守换仓一气呵成，他成为阶段内仅有的两位正收益选手之一，从上阶段垫底一跃回到第二。</p>
+
+<hr>
+
+<h3>小玉</h3>
+<p><strong>阶段操作：8/24 止盈天枢与摇光、8/25 补玉衡、8/27 抄摇光、8/29 再止盈、9/1 短线天枢、9/2 卖玉衡抄摇光、9/3-9/4 连补玉衡</strong></p>
+
+<p><strong>8/24</strong>：卖出天枢与摇光："把确定盈利的部分卖了……落袋为安""我觉得要下跌了"。<strong>8/25</strong>：买入玉衡（"补仓喵"）。<strong>8/27</strong>：买入摇光（"感觉要涨了"）。<strong>8/29</strong>：卖出天枢与摇光（"落袋为安喵"）。<strong>8/31</strong>：买回天枢（"感觉要涨"）。<strong>9/1</strong>：卖出天枢："短线王来了"。<strong>9/2</strong>：卖出玉衡："把我58的玉衡卖了提现";买入摇光："瑶光……感觉到底了可能会涨喵"。<strong>9/3</strong>：补玉衡（"补仓"）。<strong>9/4</strong>：买入玉衡："抄底抄底！"</p>
+
+<p><strong>评价：</strong>小玉是阶段5操作最密集的选手,几乎每个交易环节都在做波段：8/24 和 8/29 两次"落袋为安"把天枢/摇光的浮盈兑现,9/2 又在玉衡 56.9 时主动提现,避开了随后的暴跌。9/4 玉衡大跌到 47.70 时她果断"抄底",次日结算日又继续持有,为下一阶段埋下伏笔。频繁进出确实磨掉了一些收益,最终 -2.53% 列第三——但她是少数在玉衡下跌中全身而退的选手。</p>
+
+<hr>
+
+<h3>鹅蛋</h3>
+<p><strong>阶段操作：小步建仓三只票 → 玉衡逢跌摊成本 → 9/2 兑现天枢 → 9/4 大举补玉衡</strong></p>
+
+<p><strong>8/24</strong>：同时买入天枢、摇光、玉衡："感觉还能涨""玉衡感觉空间有限,少买点"。<strong>8/26</strong>：补玉衡与摇光（"摊平成本！"）。<strong>8/27</strong>：再补玉衡："低价买点后面看涨"。<strong>8/30</strong>：加仓玉衡与摇光（"加仓摊平成本"）。<strong>9/1</strong>：买入玉衡："感觉还可以涨！"。<strong>9/2</strong>：卖出天枢："保住目前部分收益"。<strong>9/3</strong>：补玉衡（"补仓摊平成本"）。<strong>9/4</strong>：买入玉衡："这么便宜不买啥时候买？！"</p>
+
+<p><strong>评价：</strong>鹅蛋本阶段走的是"摊平成本"路线——玉衡从 58.4 一路跌到 46.74,她一路补了 6 笔,不断拉低均价;9/4 玉衡大跌时她反而喊出"这么便宜不买啥时候买",并在结算日继续持有。这种越跌越买的风格,在前四阶段玉衡一路大涨时屡试不爽,但在本阶段玉衡转跌后,摊薄成本的节奏没能抵住价格本身的下行。最终 -4.16% 列第四,下一阶段玉衡若企稳,她的低位筹码将是潜伏的优势。</p>
+
+<hr>
+
+<h3>若梦</h3>
+<p><strong>阶段操作：8/24 加仓玉衡与摇光 → 8/27 卖玉衡 → 8/29 买回 → 8/30 清天枢 → 8/31 加摇光 → 9/2 清摇光 → 9/3 抄底天枢</strong></p>
+
+<p><strong>8/24</strong>：买入玉衡与摇光（"冲冲冲,加仓加仓"）。<strong>8/27</strong>：卖出玉衡："明天玉衡就红了是吧"。<strong>8/29</strong>：买回玉衡（"冲冲冲"）。<strong>8/30</strong>：清仓天枢："跑路跑路"。<strong>8/31</strong>：买入摇光（"加仓！冲"）。<strong>9/2</strong>：卖出摇光："太绿了太绿了"。<strong>9/3</strong>：买入天枢："好绿啊"。</p>
+
+<p><strong>评价：</strong>若梦本阶段是"<strong>情绪驱动的追涨杀跌</strong>"的典型样本：买入靠情绪——8/24 玉衡冲上阶段最高点附近时她"冲冲冲"进场,9/3 天枢反抽到阶段高点时她喊"好绿啊"追入;卖出靠恐慌——8/27 玉衡连跌几天后割肉("明天玉衡就红了是吧"),9/2 摇光回落时"太绿了太绿了"立即清仓,8/30 连手里当阶段涨幅不错的天枢也"跑路跑路"交了出去。她的每笔交易都有理由、止损也果断,但触发点永远是情绪而非价格,导致买在贪婪的高位、割在恐惧的低位,把"高买低卖"完整演绎了一遍——与飞鸟"跌了买、涨了卖"、受受"见压力才减仓"的纪律型操作正好形成对照。最终 -5.17% 列第五。作为第二个完整参与的阶段,她已经展现出说买就买、说砍就砍的执行力,下一阶段如果能学会"买在跌完、卖在涨完",把情绪换成分寸,潜力值得期待。</p>
+
+<hr>
+
+<h3>蟹蟹</h3>
+<p><strong>阶段操作：8/25 双线买入玉衡与摇光 → 8/29 加摇光 → 8/31 补玉衡 → 9/1 弃摇光 → 9/4 抄底玉衡</strong></p>
+
+<p><strong>8/25</strong>：买入玉衡与摇光（"逢跌必涨"）。<strong>8/29</strong>：买入摇光（"看涨"）。<strong>8/31</strong>：买入玉衡："玉衡最近涨幅都很小,甚至少量下跌,总要支棱起来吧。" <strong>9/1</strong>：卖出摇光："赚不来这垃圾股的钱"。<strong>9/4</strong>：买入玉衡："加仓！抄底！"</p>
+
+<p><strong>评价：</strong>蟹蟹是上一阶段冠军,本阶段延续"逢跌必涨"的信仰,在玉衡 54.75 一路补到 46.74；但与前几个阶段不同,这次玉衡没有像之前那样"跌完就反弹",而是持续阴跌。他的判断逻辑没有变,变的是市场环境——曾经屡试不爽的"玉衡逢跌必涨"在本阶段失灵,阶段收益率 -5.70% 列第六。好在他 9/4 的抄底位置已经处于阶段低位,玉衡若企稳,下一阶段仍有翻盘空间。</p>
+
+<hr>
+
+<h2>🔍 阶段关键转折</h2>
+
+<h3>一、玉衡"滞涨反转"：阶段内 -18.4%,累计涨幅收窄至 +177.6%</h3>
+
+<p>阶段五以玉衡高位滞涨开场（8/24 摸高 58.40 后无力再创新高），随后转入单边回调，9/4 单日大跌收 47.70，结算日 9/5 续跌收于 46.74。开赛以来玉衡的涨幅轨迹：</p>
+
+<table>
+  <tr>
+    <th>节点</th>
+    <th>时间</th>
+    <th>玉衡收盘</th>
+    <th>阶段涨幅</th>
+    <th>累计涨幅</th>
+  </tr>
+  <tr>
+    <td>基准</td>
+    <td>7/4</td>
+    <td>16.84</td>
+    <td>—</td>
+    <td>—</td>
+  </tr>
+  <tr>
+    <td>阶段一末</td>
+    <td>7/16</td>
+    <td>22.50</td>
+    <td class="positive">+33.6%</td>
+    <td class="positive">+33.6%</td>
+  </tr>
+  <tr>
+    <td>阶段二末</td>
+    <td>7/28</td>
+    <td>34.45</td>
+    <td class="positive">+53.1%</td>
+    <td class="positive">+104.6%</td>
+  </tr>
+  <tr>
+    <td>阶段三末</td>
+    <td>8/10</td>
+    <td>43.05</td>
+    <td class="positive">+25.0%</td>
+    <td class="positive">+155.6%</td>
+  </tr>
+  <tr>
+    <td>阶段四末</td>
+    <td>8/22</td>
+    <td>57.40</td>
+    <td class="positive">+33.3%</td>
+    <td class="positive"><strong>+240.9%</strong></td>
+  </tr>
+  <tr>
+    <td><strong>阶段五末</strong></td>
+    <td><strong>9/5</strong></td>
+    <td><strong>46.74</strong></td>
+    <td class="negative"><strong>-18.4%</strong></td>
+    <td class="positive"><strong>+177.6%</strong></td>
+  </tr>
+</table>
+
+<p>这是玉衡开赛以来<strong>首个下跌阶段</strong>。前四阶段"逢跌必涨"的规律第一次被打破——8/25 起连续阴跌、9/2 二次下探、9/4-9/5 加速收官。玉衡会企稳还是继续调整，交给下一阶段的市场自己回答。</p>
+
+<h3>二、冠军再易主：飞鸟首冠，本阶段仅有两人正收益</h3>
+
+<table>
+  <tr>
+    <th style="text-align:left;">选手</th>
+    <th>阶段一</th>
+    <th>阶段二</th>
+    <th>阶段三</th>
+    <th>阶段四</th>
+    <th><strong>阶段五</strong></th>
+  </tr>
+  <tr>
+    <td style="text-align:left;">受受</td>
+    <td>1</td>
+    <td>1</td>
+    <td>2</td>
+    <td>6</td>
+    <td>2</td>
+  </tr>
+  <tr>
+    <td style="text-align:left;">小玉</td>
+    <td>3</td>
+    <td>2</td>
+    <td>1</td>
+    <td>4</td>
+    <td>3</td>
+  </tr>
+  <tr>
+    <td style="text-align:left;">蟹蟹</td>
+    <td>2</td>
+    <td>4</td>
+    <td>4</td>
+    <td class="positive"><strong>1</strong></td>
+    <td>6</td>
+  </tr>
+  <tr>
+    <td style="text-align:left;">飞鸟</td>
+    <td>4</td>
+    <td>3</td>
+    <td>3</td>
+    <td>2</td>
+    <td class="positive"><strong>1</strong></td>
+  </tr>
+  <tr>
+    <td style="text-align:left;">鹅蛋</td>
+    <td>5</td>
+    <td>5</td>
+    <td>5</td>
+    <td>3</td>
+    <td>4</td>
+  </tr>
+  <tr>
+    <td style="text-align:left;">若梦</td>
+    <td>—</td>
+    <td>—</td>
+    <td>—</td>
+    <td>5</td>
+    <td>5</td>
+  </tr>
+</table>
+
+<p>（数字为该阶段排名名次。）</p>
+
+<p>五阶段冠军依次为：受受、受受、小玉、蟹蟹、<strong>飞鸟</strong>。受受在阶段一、二完成过卫冕；此后小玉、蟹蟹、飞鸟连续三阶段各诞生一位新王。本阶段玉衡大跌、只有飞鸟与受受两位选手拿到正收益，头部与尾部差距重新拉近：上一阶段冠军蟹蟹跌落至第六，而上一阶段垫底的受受回升到第二。飞鸟凭借天枢/摇光的小波段纪律，成为"玉衡退潮"期最稳的选手。</p>
+
+<h3>三、天枢与摇光"补位"，三票格局生变</h3>
+
+<p>阶段内天枢 +2.5%（3.915 → 4.014）、摇光 -0.5%（26.147 → 26.004），与玉衡 -18.4% 形成反差。开赛以来累计：天枢 <strong>+0.3%</strong>、摇光 <strong>+11.4%</strong>、玉衡 <strong>+177.6%</strong>——玉衡的绝对优势依然巨大，但这是三只票的差距<strong>首次收窄</strong>。接下来三只票各自的走势，是下一阶段最大的看点。</p>
+
+<p style="text-align:center;color:#94a3b8;margin-top:24px;font-size:13px;">📌 提示：本报告由 AI 生成，仅供娱乐，别太当真~</p>
+
+<p style="text-align:center;color:#94a3b8;margin-top:8px;font-size:13px;">阶段六见 🎮</p>
+
+</body>
+</html>
