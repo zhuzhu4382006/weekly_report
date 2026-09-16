@@ -236,7 +236,8 @@ function getTodayGameDay() {
 //  数据加载
 // ============================================================
 let rawData = null;
-let tradeData = null;   // player_trades.json
+let tradeData = null;   // 终局保密期为空，不显示选手买卖点
+const FINAL_PRIVACY_MODE = true;
 let currentStock = 'A';
 let currentPlayer = ''; // 空 = 不显示买卖点
 let currentDay = 9999; // 默认显示全部
@@ -268,14 +269,15 @@ const stockParam = urlParams.get('stock');
 
 async function loadData() {
   try {
-    const [resp, respT] = await Promise.all([
-      fetch('kline_data.json'),
-      fetch('player_trades_public.json')
-    ]);
+    const resp = await fetch('kline_data.json');
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     rawData = await resp.json();
-    if (respT.ok) {
-      tradeData = await respT.json();
+    if (!FINAL_PRIVACY_MODE) {
+      const respT = await fetch('player_trades_public.json');
+      if (respT.ok) tradeData = await respT.json();
+    } else {
+      const selector = document.getElementById('playerSelector');
+      if (selector) selector.style.display = 'none';
     }
     document.getElementById('chartLoading').style.display = 'none';
     document.getElementById('chartWrap').style.display = 'block';
@@ -832,6 +834,7 @@ document.getElementById('stockSelector').addEventListener('change', function() {
 });
 
 document.getElementById('playerSelector').addEventListener('change', function() {
+  if (FINAL_PRIVACY_MODE) return;
   currentPlayer = this.value;
   renderChart();
 });
@@ -978,7 +981,7 @@ if (stockParam && ["A","B","C"].includes(stockParam)) {
 
 // 从 URL 恢复选手选择（可选，便于把链接发给对应选手/组织者复盘）
 const playerParam = urlParams.get('player');
-if (playerParam && document.getElementById("playerSelector")) {
+if (!FINAL_PRIVACY_MODE && playerParam && document.getElementById("playerSelector")) {
   const sel = document.getElementById("playerSelector");
   const matched = Array.from(sel.options).some(o => o.value === playerParam);
   if (matched) {
