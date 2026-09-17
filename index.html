@@ -41,46 +41,12 @@ h1 { text-align: center; font-size: 26px; margin-bottom: 4px; }
 }
 .note strong { color: #1e293b; }
 
-/* ===== 持仓分布 ===== */
-.pos-card {
-  background: #fff; border-radius: 12px; padding: 18px 20px; margin-bottom: 16px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;
-}
-.pos-title {
-  font-size: 15px; font-weight: 600; margin-bottom: 12px; text-align: center;
-}
-.pos-grid {
-  display: grid; grid-template-columns: 56px repeat(3, 1fr); gap: 2px;
-  font-size: 13px; max-width: 340px; margin: 0 auto;
-}
-.pos-grid .ph { font-weight: 600; color: #64748b; font-size: 11px; text-align: center; padding: 4px 0; }
-.pos-grid .pn { font-weight: 600; font-size: 13px; padding: 4px 4px; white-space: nowrap; }
-.pos-grid .pc { text-align: center; padding: 4px 0; font-size: 16px; }
-.pos-yes { color: #16a34a; font-weight: 700; }
-.pos-no { color: #cbd5e1; }
-.pos-update { font-size: 11px; color: #94a3b8; text-align: center; margin-top: 8px; }
 </style>
 </head>
 <body>
 
 <h1>📈 模拟炒股 · 周报</h1>
 <p class="subtitle">每周分析报告 · 点击查看详情</p>
-
-<div class="pos-card" id="posCard">
-  <div class="pos-title">📌 持仓分布 <span style="font-weight:400;font-size:12px;color:#64748b;">（截至 9/17）</span></div>
-  <div id="posBody"></div>
-  <div class="pos-update">✓ 持有 &nbsp;·&nbsp; — 未持仓 &nbsp;·&nbsp; 下次更新：推进游戏后修改下方数据</div>
-</div>
-
-<div class="card-link" style="border-color:#cbd5e1;background:#f8fafc;cursor:default;">
-  <div class="card-left">
-    <div class="card-rank">🔒</div>
-    <div class="card-info">
-      <h2>终局保密阶段 <span style="display:inline-block;font-size:11px;padding:1px 8px;border-radius:4px;margin-left:8px;font-weight:500;background:#e2e8f0;color:#475569;">阶段 7–8</span></h2>
-      <p>不公开选手操作、持仓与资产排名 · 终局统一揭晓</p>
-    </div>
-  </div>
-</div>
 
 <a class="card-link" href="kline.html?day=111" style="border-color:#bbf7d0;background:#f0fdf4;">
   <div class="card-left">
@@ -206,49 +172,10 @@ h1 { text-align: center; font-size: 26px; margin-bottom: 4px; }
 
 <div class="note">
   <strong>💡 说明</strong><br>
-  当前处于终局保密阶段：每日 K 线与收盘价照常公开；选手操作、持仓和资产排名留至终局统一揭晓。<br>
   已结算阶段的报告仍可查看。
 </div>
 
 <script>
-// ⚡ 推进游戏后，修改这里的数据即可更新持仓分布
-const FINAL_PRIVACY_MODE = true;
-const POS_DATA = {
-  date: '9月17日',
-  players: [
-  ]
-};
-
-const STOCK_NAMES = ['天枢能源', '玉衡材料', '摇光电子'];
-const STOCK_IDS = ['A', 'B', 'C'];
-
-function renderPos() {
-  const body = document.getElementById('posBody');
-  if (FINAL_PRIVACY_MODE) {
-    document.querySelector('.pos-title').innerHTML = '🔒 选手仓位保密 <span style="font-weight:400;font-size:12px;color:#64748b;">（终局统一揭晓）</span>';
-    document.querySelector('.pos-update').textContent = '第七、八阶段不公开选手实时持仓与资产排名';
-    body.innerHTML = '<div style="padding:8px 12px;text-align:center;color:#64748b;font-size:13px;">每日 K 线和收盘价照常公开，大家独立决策，终局再见分晓。</div>';
-    return;
-  }
-  let html = '<div class="pos-grid">';
-  // Header
-  html += '<div class="ph"></div>';
-  for (const name of STOCK_NAMES) {
-    html += `<div class="ph">${name}</div>`;
-  }
-  // Players
-  for (const p of POS_DATA.players) {
-    html += `<div class="pn">${p.name}</div>`;
-    for (const sid of STOCK_IDS) {
-      const has = p[sid];
-      html += `<div class="pc">${has ? '<span class="pos-yes">✓</span>' : '<span class="pos-no">—</span>'}</div>`;
-    }
-  }
-  html += '</div>';
-  body.innerHTML = html;
-}
-renderPos();
-
 // 第六阶段报告与首页摘要同在 9/16 22:00 解锁，避免提前剧透。
 function updatePhase6Card() {
   const unlockTime = new Date(2026, 8, 16, 22, 0, 0);
