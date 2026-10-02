@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<title>终局奖杯 · 刻字方案</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body {
+    background:#eef1f6; color:#1e293b; line-height:1.7;
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    padding:0 0 40px;
+  }
+  .wrap { max-width:900px; margin:0 auto; padding:0 14px; }
+
+  /* ---------- 头部 ---------- */
+  header { background:#1f2a44; color:#fff; padding:26px 14px 22px; }
+  header .wrap { padding:0; }
+  .eyebrow { font-size:12px; letter-spacing:.28em; color:#f0c27f; font-weight:700; }
+  h1 { font-size:24px; font-weight:800; margin:8px 0 6px; letter-spacing:.02em; }
+  .lead { font-size:14px; color:#c7d2e3; }
+  .lead b { color:#fff; }
+
+  /* ---------- 通用区块 ---------- */
+  .panel { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:16px 16px 18px; margin-top:14px; }
+  .panel h2 { font-size:15px; font-weight:800; color:#1f2a44; margin-bottom:8px; }
+  .hint { font-size:13px; color:#64748b; }
+  .hint b { color:#1e293b; }
+
+  /* ---------- 标题选择 ---------- */
+  .titlepick { display:grid; grid-template-columns:1fr; gap:8px; }
+  @media (min-width:560px) { .titlepick { grid-template-columns:1fr 1fr 1fr; } }
+  .titlepick button {
+    font-family:inherit; font-size:16px; font-weight:700; letter-spacing:.06em;
+    color:#475569; background:#f1f5f9; border:1.5px solid #e2e8f0; border-radius:11px;
+    padding:12px 8px; cursor:pointer;
+  }
+  .titlepick button .w { display:block; font-size:11px; font-weight:600; color:#94a3b8; margin-top:3px; letter-spacing:0; }
+  .titlepick button.on { background:#1f2a44; color:#fff; border-color:#1f2a44; }
+  .titlepick button.on .w { color:#c7d2e3; }
+  .step { display:inline-block; font-size:11px; font-weight:800; color:#b8860b;
+          background:#fdf6e3; border-radius:6px; padding:1px 7px; margin-right:6px; letter-spacing:.04em; }
+
+  /* ---------- 昵称输入 ---------- */
+  .namebox { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .namebox label { font-size:13px; color:#475569; font-weight:600; }
+  .namebox input {
+    flex:1; min-width:130px; font-size:20px; font-weight:800; letter-spacing:.14em;
+    text-align:center; padding:9px 10px; border:1.5px solid #cbd5e1; border-radius:10px;
+    background:#f8fafc; color:#1f2a44; font-family:inherit;
+  }
+  .namebox input:focus { outline:none; border-color:#1f2a44; background:#fff; }
+  .namebox .tip { font-size:12px; color:#94a3b8; flex:0 0 100%; }
+
+  /* ---------- 方案卡片 ---------- */
+  .grid { display:grid; grid-template-columns:1fr; gap:14px; margin-top:14px; }
+  @media (min-width:720px) { .grid { grid-template-columns:1fr 1fr; } }
+
+  .card { background:#fff; border:1.5px solid #e2e8f0; border-radius:16px; padding:14px; }
+  .card-head { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  .no {
+    flex:0 0 auto; font-size:12px; font-weight:800; color:#fff; background:#1f2a44;
+    border-radius:7px; padding:3px 9px; letter-spacing:.04em;
+  }
+  .card-title { font-size:14px; font-weight:700; color:#1f2a44; }
+
+  /* ---------- 刻字预览:水晶/金属牌 ---------- */
+  .mock {
+    position:relative; overflow:hidden; border-radius:13px;
+    background:linear-gradient(158deg,#1e2839 0%,#0c1220 52%,#16202f 100%);
+    padding:24px 12px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.10), inset 0 -18px 34px rgba(0,0,0,.35), 0 10px 22px rgba(15,23,42,.22);
+  }
+  .mock::after {
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(118deg, rgba(255,255,255,.11) 0%, rgba(255,255,255,0) 36%, rgba(255,255,255,0) 64%, rgba(255,255,255,.07) 100%);
+  }
+  .mock::before {
+    content:""; position:absolute; left:14%; right:14%; top:9px; height:1px;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);
+  }
+  .engrave { position:relative; z-index:1; text-align:center; }
+  .engrave .l {
+    display:block; line-height:2.05; color:#e9eff8;
+    text-shadow:0 1px 0 rgba(255,255,255,.20), 0 -1px 1px rgba(0,0,0,.60);
+    word-break:keep-all;
+  }
+  .l-main  { font-size:17px; font-weight:700; letter-spacing:.20em; }
+  .l-grade { font-size:12.5px; color:#a8bad3; letter-spacing:.44em; text-indent:.44em; }
+  .l-name  { font-size:25px; font-weight:800; color:#f2d69b; letter-spacing:.20em; text-indent:.20em;
+             text-shadow:0 1px 0 rgba(255,240,200,.45), 0 -1px 1px rgba(0,0,0,.55), 0 0 16px rgba(242,214,155,.30); }
+  .l-data  { font-size:12.5px; color:#bac9dd; letter-spacing:.06em; }
+  .l-motto { font-size:13.5px; color:#e2cfa4; letter-spacing:.30em; text-indent:.30em; }
+  .l-date  { font-size:12px; color:#8ea3bd; letter-spacing:.16em; text-indent:.16em; }
+  .l-en    { font-size:15px; font-weight:700; letter-spacing:.16em; color:#e9eff8; }
+  .qmark   { color:#b8860b; font-weight:700; }
+
+  .mocklabel { font-size:11px; color:#94a3b8; margin-top:7px; text-align:right; }
+  .note { font-size:12.5px; color:#64748b; margin-top:10px; }
+
+  /* 6 号 A/B 预览切换 */
+  .switch { display:flex; gap:6px; margin-top:10px; }
+  .switch button {
+    flex:1; font-family:inherit; font-size:12px; font-weight:700; color:#475569;
+    background:#f1f5f9; border:1px solid #e2e8f0; border-radius:8px; padding:6px 8px; cursor:pointer;
+  }
+  .switch button.on { background:#1f2a44; color:#fff; border-color:#1f2a44; }
+
+  /* 8 号语录试写 */
+  .quotebox { margin-top:10px; }
+  .quotebox input {
+    width:100%; font-family:inherit; font-size:14px; padding:8px 10px;
+    border:1.5px dashed #cbd5e1; border-radius:9px; background:#f8fafc; color:#1f2a44; text-align:center;
+  }
+  .quotebox input:focus { outline:none; border-color:#b8860b; background:#fff; }
+
+  footer { text-align:center; font-size:12px; color:#94a3b8; padding:22px 14px 6px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">终局奖杯 · 刻字方案</div>
+    <h1>如果你是冠军,你想刻哪个?</h1>
+    <p class="lead">终局冠军会拿到一座实物奖杯,<b>刻什么字由冠军自己定</b>。<br>所以先想一下:如果你是冠军,你会想要哪一个?点一个<b>赛事标题</b>、写上自己的名字,再从下面 10 个版本里挑一个,微信回我「标题 + 编号」就行。</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- 第一步:选标题 -->
+  <div class="panel">
+    <h2><span class="step">第一步</span>先点一个标题</h2>
+    <div class="titlepick" id="titlepick">
+      <button type="button" data-t="投资马拉松">投资马拉松<span class="w">5 个字</span></button>
+      <button type="button" class="on" data-t="投资大赛">投资大赛<span class="w">4 个字 · 最简短</span></button>
+      <button type="button" data-t="模拟炒股大赛">模拟炒股大赛<span class="w">6 个字 · 现在用的</span></button>
+    </div>
+    <p class="hint" style="margin-top:10px">点一下就会换到下面所有预览里,三个都点着看看,哪个顺眼选哪个。</p>
+  </div>
+
+  <!-- 第二步:昵称实时预览 -->
+  <div class="panel">
+    <h2><span class="step">第二步</span>写上你的昵称,看效果</h2>
+    <div class="namebox">
+      <label for="nick">昵称</label>
+      <input id="nick" type="text" value="某某" maxlength="4" autocomplete="off" spellcheck="false">
+      <span class="tip">改成你自己的名字,下面 10 个预览会同时更新(两个字的名字排版最好看)</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2><span class="step">第三步</span>挑一个你最想要的(10 选 1)</h2>
+    <p class="hint">每个方框就是刻在奖杯上的实际样子(模拟刻字效果,真品是水晶/金属质感)。<br>按<b>你自己的喜好</b>挑就行 —— 谁最后夺冠,就按谁挑的那个刻。<b>微信回我「标题 + 编号」</b>,例如「投资大赛 + 3 号」。实在选不出,回个"随便",我按 3 号办。</p>
+  </div>
+
+  <div class="grid">
+
+    <!-- 1 -->
+    <div class="card">
+      <div class="card-head"><span class="no">1 号</span><span class="card-title">极简</span></div>
+      <div class="mock"><div class="engrave">
+        <span class="l l-main"><span class="ttl">投资大赛</span></span>
+        <span class="l l-name nm">某某</span>
+      </div></div>
+      <div class="mocklabel">水晶刻字 · 模拟预览</div>
+      <p class="note">最干净,留白最多,什么都不多说。</p>
+    </div>
+
+    <!-- 2 -->
+    <div class="card">
+      <div class="card-head"><span class="no">2 号</span><span class="card-title">经典</span></div>
+      <div class="mock"><div class="engrave">
+        <span class="l l-main"><span class="ttl">投资大赛</span></span>
+        <span class="l l-name nm">某某</span>
+        <span class="l l-date">2026.10</span>
+      </div></div>
+      <div class="mocklabel">水晶刻字 · 模拟预览</div>
+      <p class="note">干净、百搭,任何杯型都刻得下。</p>
+    </div>
+
+    <!-- 3 -->
+    <div class="card">
+      <div class="card-head"><span class="no">3 号</span><span class="card-title">经典 + 称号</span></div>
+      <div class="mock"><div class="engrave">
+        <span class="l l-main"><span class="ttl">投资大赛</span></span>
+        <span class="l l-grade">终局冠军</span>
+        <span class="l l-name nm">某某</span>
+        <span class="l l-date">2026.10</span>
+      </div></div>
+      <div class="mocklabel">水晶刻字 · 模拟预览</div>
+      <p class="note">「终局冠军」单独一行,仪式感最强。</p>
+    </div>
+
+    <!-- 4 -->
+    <div class="card">
+      <div class="card-head"><span class="no">4 号</span><span class="card-title">带战绩</span></div>
+      <div class="mock"><div class="engrave">
+        <span class="l l-main"><span class="ttl">投资大赛</span></span>
+        <span class="l l-grade">终局冠军</span>
+        <span class="l l-name nm">某某</span>
+        <span class="l l-data">最终收益率 +xxx.x%</span>
+        <span class="l l-date">2026.10</span>
+      </div></div>
+      <div class="mocklabel">水晶刻字 · 模拟预览</div>
+      <p class="note">赢了多少,一目了然。</p>
+    </div>
+
+    <!-- 5 -->
+    <div class="card">
+      <div class="card-head"><span class="no">5 号</span><span class="card-title">带倍数</span></div>
+      <div class="mock"><div class="engrave">
+        <span class="l l-main"><span class="ttl">投资大赛</span></span>
+        <span class="l l-grade">终局冠军</span>
+        <span class="l l-name nm">某某</span>
+        <span class="l l-data">本金 ×x.xx</span>
+        <span class="l l-date">2026.10</span>
+      </div></div>
+      <div class="mocklabel">水晶刻字 · 模拟预览</div>
+      <p class="note">「×x.xx」比百分比更有冲击力,也更好懂。</p>
+    </div>
+
+    <!-- 6 -->
+    <div class="card" id="card6">
+      <div class="card-head"><span class="no">6 号</span><span class="card-title">整个赛季</span></div>
+      <div class="mock"><div class="engrave" id="mock6a">
+        <span class="l l-main"><span class="ttl">投资大赛</span></span>
+        <span class="l l-name nm">某某</span>
+        <span class="l l-date">2026.07.04 — 2026.10</span>
+      </div><div class="engrave" id="mock6b" style="display:none">
+        <span class="l l-main"><span class="ttl">投资大赛</span></span>
+        <span class="l l-name nm">某某</span>
+        <span class="l l-date">终局之日 · 2026.10</span>
+      </div></div>
+      <div class="mocklabel">水晶刻字 · 模拟预览</div>
+      <div class="switch">
+        <button type="button" class="on" data-v="a">用起止时间</button>
+        <button type="button" data-v="b">用「终局之日」</button>
+      </div>
+      <p class="note">强调"这是一整个赛季"。看完两种再回我。<span class="qmark">想要后面那种,回我「6 号 B」。</span></p>
+    </div>
+
+    <!-- 7 -->
+    <div class="card">
+      <div class="card-head"><span class="no">7 号</span><span class="card-title">跑赢躺平</span></div>
+      <div class="mock"><div class="engrave">
+        <span class="l l-main"><span class="ttl">投资大赛</span> 终局冠军</span>
+        <span class="l l-name nm">某某</span>
+        <span class="l l-data">跑赢存银行对照组</span>
+        <span class="l l-date">2026.10</span>
+      </div></div>
+      <div class="mocklabel">水晶刻字 · 模拟预览</div>
+      <p class="note">规则书里真有那个"躺平存银行"的对照组 —— 这句是本局独有的战绩宣言。</p>
+    </div>
+
+    <!-- 8 -->
+    <div class="card" id="card8">
+      <div class="card-head"><span class="no">8 号</span><span class="card-title">自己的一句话</span></div>
+      <div class="mock"><div class="engrave">
+        <span class="l l-main"><span class="ttl">投资大赛</span> 终局冠军</span>
+        <span class="l l-name"><span class="nm">某某</span> · 「<span id="quotepreview">____</span>」</span>
+        <span class="l l-date">2026.10</span>
+      </div></div>
+      <div class="mocklabel">水晶刻字 · 模拟预览</div>
+      <div class="quotebox">
+        <input id="quoteinput" type="text" maxlength="12" placeholder="试试写一句,例如:我不贪" autocomplete="off">
+      </div>
+      <p class="note">这句<b>由你自己写</b>。谁夺冠,就刻谁的那句 —— 想选这个的话,把你的那句话微信发我。</p>
+    </div>
+
+    <!-- 9 -->
+    <div class="card">
+      <div class="card-head"><span class="no">9 号</span><span class="card-title">英文款</span></div>
+      <div class="mock"><div class="engrave">
+        <span class="l l-en">INVESTMENT CUP</span>
+        <span class="l l-name">CHAMPION <span class="nm">某某</span></span>
+        <span class="l l-date">2026.10</span>
+      </div></div>
+      <div class="mocklabel">水晶刻字 · 模拟预览</div>
+      <p class="note">英文排版配金属奖杯最好看,排面拉满。</p>
+    </div>
+
+    <!-- 10 -->
+    <div class="card">
+      <div class="card-head"><span class="no">10 号</span><span class="card-title">实至名归</span></div>
+      <div class="mock"><div class="engrave">
+        <span class="l l-main"><span class="ttl">投资大赛</span></span>
+        <span class="l l-grade">终局冠军</span>
+        <span class="l l-name nm">某某</span>
+        <span class="l l-motto">实至名归</span>
+        <span class="l l-date">2026.10</span>
+      </div></div>
+      <div class="mocklabel">水晶刻字 · 模拟预览</div>
+      <p class="note">不列数据,只给一句评价 —— 冠军就是冠军。</p>
+    </div>
+
+  </div>
+
+  <footer>终局奖杯 · 刻字方案</footer>
+</div>
+
+<script>
+(function () {
+  var nickInput  = document.getElementById('nick');
+  var quoteInput = document.getElementById('quoteinput');
+  var quotePrev  = document.getElementById('quotepreview');
+
+  /* 昵称实时预览 */
+  function syncNick() {
+    var v = (nickInput.value || '').trim();
+    if (v === '') v = '某某';
+    Array.prototype.forEach.call(document.querySelectorAll('.nm'), function (el) { el.textContent = v; });
+  }
+  nickInput.addEventListener('input', syncNick);
+  syncNick();
+
+  /* 第一步:标题切换 —— 换掉所有预览里的赛事标题 */
+  var titleBtns = document.querySelectorAll('#titlepick button');
+  function applyTitle(t) {
+    Array.prototype.forEach.call(document.querySelectorAll('.ttl'), function (el) { el.textContent = t; });
+  }
+  Array.prototype.forEach.call(titleBtns, function (b) {
+    b.addEventListener('click', function () {
+      Array.prototype.forEach.call(titleBtns, function (x) { x.classList.toggle('on', x === b); });
+      applyTitle(b.getAttribute('data-t'));
+    });
+  });
+  /* 默认选中项:一进页面就按它渲染,保证和按钮状态一致 */
+  (function () {
+    var on = document.querySelector('#titlepick button.on') || titleBtns[0];
+    if (on) applyTitle(on.getAttribute('data-t'));
+  })();
+
+  /* 8 号:试写一句话,立刻看到刻出来的样子 */
+  quoteInput.addEventListener('input', function () {
+    var v = (quoteInput.value || '').trim();
+    quotePrev.textContent = v === '' ? '____' : v;
+  });
+
+  /* 6 号:A / B 两种写法都看一眼 */
+  Array.prototype.forEach.call(document.querySelectorAll('#card6 .switch button'), function (b) {
+    b.addEventListener('click', function () {
+      var v = b.getAttribute('data-v');
+      Array.prototype.forEach.call(document.querySelectorAll('#card6 .switch button'), function (x) {
+        x.classList.toggle('on', x === b);
+      });
+      document.getElementById('mock6a').style.display = (v === 'a') ? '' : 'none';
+      document.getElementById('mock6b').style.display = (v === 'b') ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>
