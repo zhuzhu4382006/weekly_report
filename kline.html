@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>K线行情 · 模拟炒股</title>
-<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script src="echarts.min.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
@@ -537,9 +537,23 @@ function renderChart() {
     var compPrevDate = gameDateMap[compPrevDay];
     var compPrevClose = null;
     if (compPrevDate) {
+      // 先精确匹配
       for (var pi = allData.length - 1; pi >= 0; pi--) {
         if (allData[pi].date === compPrevDate) { compPrevClose = allData[pi].close; break; }
       }
+      // 回退:该日为休市日/无K线时(如玉衡材料港股),取 <= 目标日期的最近一根
+      if (compPrevClose === null) {
+        for (var pj = allData.length - 1; pj >= 0; pj--) {
+          if (allData[pj].date <= compPrevDate) { compPrevClose = allData[pj].close; break; }
+        }
+      }
+    }
+    if (compPrevClose === null) {
+      // 兜底清空,避免残留上一只股票的数字
+      var tEl = document.getElementById("cmpToday");
+      var pEl = document.getElementById("cmpPrev");
+      if (tEl) tEl.textContent = '--';
+      if (pEl) pEl.textContent = '--';
     }
     if (compPrevClose !== null) {
       var compPrevDisp = fmt(compPrevClose);
@@ -597,7 +611,11 @@ function renderChart() {
 
   // ===== ECharts =====
   const dom = document.getElementById('klineChart');
-  const chart = echarts.init(dom, 'dark');
+  // 复用已有实例(重复 init 会残留旧的 series/缩放状态,导致切换股票时旧数据串台)
+  var chart = echarts.getInstanceByDom(dom);
+  if (!chart) {
+    chart = echarts.init(dom, 'dark');
+  }
 
   // 买卖点标记（当前选中选手时为 candlestick 附加 markLine 虚线）
   var tradeMarks = null;
