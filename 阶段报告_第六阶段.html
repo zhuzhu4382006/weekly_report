@@ -14,9 +14,9 @@ blockquote,.note{background:#f8fafc;border-left:3px solid #94a3b8;padding:9px 14
 </style>
 </head>
 <body>
-<div class="unlock-overlay" id="unlockOverlay"><div class="lock-emoji">🔒</div><div class="lock-title">阶段报告已锁定</div><div class="lock-sub">将于 <strong>9月16日（周三）22:00</strong> 自动解锁</div></div>
+<div class="unlock-overlay" id="unlockOverlay"><div class="lock-emoji">🔒</div><div class="lock-title">阶段报告已锁定</div><div class="lock-sub">将于 <strong>9月16日（周三）20:00</strong> 自动解锁</div></div>
 <script>
-var UNLOCK_TIME=new Date(2026,8,16,22,0,0),PREVIEW=window.location.hash.indexOf('preview')>=0;
+var UNLOCK_TIME=new Date(2026,8,16,20,0,0),PREVIEW=window.location.hash.indexOf('preview')>=0;
 function updateLock(){var e=document.getElementById('unlockOverlay');if(e)e.style.display=(!PREVIEW&&new Date()<UNLOCK_TIME)?'flex':'none'}updateLock();
 document.addEventListener('keydown',function(e){if(e.ctrlKey&&e.shiftKey&&(e.key==='K'||e.key==='k')){PREVIEW=true;updateLock()}});
 </script>

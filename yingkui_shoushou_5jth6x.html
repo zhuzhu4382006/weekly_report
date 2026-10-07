@@ -143,7 +143,7 @@ body {
     <div class="avatar">👤</div>
     <div>
       <div class="title">📅 受受 · 盈亏日历</div>
-      <div class="subtitle">模拟炒股 · 仅本人可见 · 每日 22:00 解锁最新</div>
+      <div class="subtitle">模拟炒股 · 仅本人可见 · 每日 20:00 解锁最新</div>
     </div>
   </div>
 
@@ -202,11 +202,11 @@ function escHtml(v){
   return String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
-// ---------- 解锁判定(N日22:00解锁 N+1 日行情;22:00前显示当天) ----------
+// ---------- 解锁判定(N日20:00解锁 N+1 日行情;20:00前显示当天) ----------
 function getResolvedDate(){
   var now = new Date();
-  // 22:00 后:解锁第二天的行情,日期前进一天;22:00 前:显示当天行情
-  if (now.getHours() >= 22) {
+  // 20:00 后:解锁第二天的行情,日期前进一天;20:00 前:显示当天行情
+  if (now.getHours() >= 20) {
     now.setDate(now.getDate() + 1);
   }
   var s = now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate());
@@ -294,7 +294,7 @@ function renderNotice(locked, resolved){
   var el = document.getElementById('lockNotice');
   if (locked){
     el.className = 'lock-notice locked';
-    el.innerHTML = '🔒 已锁定:只显示到 <strong>' + fmtCN(resolved) + '</strong> · 最新(' + fmtCN(P.latestDate) + ')数据 <strong>22:00</strong> 解锁';
+    el.innerHTML = '🔒 已锁定:只显示到 <strong>' + fmtCN(resolved) + '</strong> · 最新(' + fmtCN(P.latestDate) + ')数据 <strong>20:00</strong> 解锁';
   } else {
     el.className = 'lock-notice open';
     el.innerHTML = '✅ 全部数据已解锁 · 截至 ' + fmtCN(P.latestDate);
@@ -367,7 +367,7 @@ function renderSummary(resolved, locked){
       html += '<div class="lock-line">(空仓)</div>';
     }
   } else {
-    html += '<div class="lock-line">🔒 今日持仓明细 22:00 解锁</div>';
+    html += '<div class="lock-line">🔒 今日持仓明细 20:00 解锁</div>';
   }
 
   document.getElementById('summaryCard').innerHTML = html;
@@ -390,7 +390,7 @@ function renderPhases(resolved){
       } else {
         html += '<div class="phase-row">';
         html += '<div class="phase-info"><span class="phase-name">第' + ph.n + '阶段 · 进行中</span><span class="phase-range">从 ' + fmtCN(ph.start) + ' 起 · 最新一天待解锁</span></div>';
-        html += '<div class="phase-right"><div class="phase-rate">🔒 22:00 解锁</div><div class="phase-sub">发薪后数据解锁后显示</div></div>';
+        html += '<div class="phase-right"><div class="phase-rate">🔒 20:00 解锁</div><div class="phase-sub">发薪后数据解锁后显示</div></div>';
         html += '</div>';
         continue;
       }
@@ -398,7 +398,7 @@ function renderPhases(resolved){
       // 已完成阶段:结算值基于"结算日"状态,但对应的快照还没解锁,直显示会提前暴露隐藏行情(如 9/4 看到 9/5 才该显示的阶段5净值)。
       html += '<div class="phase-row">';
       html += '<div class="phase-info"><span class="phase-name">第' + ph.n + '阶段 · 已结算</span><span class="phase-range">' + fmtCN(ph.start) + ' - ' + fmtCN(ph.end) + ' · 结算数据待解锁</span></div>';
-      html += '<div class="phase-right"><div class="phase-rate">🔒 22:00 解锁</div><div class="phase-sub">' + fmtCN(ph.endUnlock) + ' 可见</div></div>';
+      html += '<div class="phase-right"><div class="phase-rate">🔒 20:00 解锁</div><div class="phase-sub">' + fmtCN(ph.endUnlock) + ' 可见</div></div>';
       html += '</div>';
       continue;
     }
@@ -449,7 +449,7 @@ function renderStats(resolved, locked){
       splHtml += '<div><span style="margin-right:8px;">' + stockNames[si] + '：<span class="' + tcls + '" style="font-weight:600;">' + tsign + fmtMoney(Math.abs(spl.total)) + '</span></span><span style="font-size:11px;color:#8a8fa3;">（已实现 ' + (spl.realized >= 0 ? '+' : '-') + fmtMoney(Math.abs(spl.realized)) + ' ｜ 未实现 ' + (spl.unrealized >= 0 ? '+' : '-') + fmtMoney(Math.abs(spl.unrealized)) + '）</span></div>';
     }
   } else {
-    splHtml = '<div class="lock-line">🔒 单支股票盈亏 22:00 解锁</div>';
+    splHtml = '<div class="lock-line">🔒 单支股票盈亏 20:00 解锁</div>';
   }
   html += '<div class="pstat" style="grid-column:1/-1;"><div class="pstat-label">📈 单支股票盈亏</div><div style="font-size:13px;line-height:2;margin-top:4px;">' + splHtml + '</div></div>';
 
