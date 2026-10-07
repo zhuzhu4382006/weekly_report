@@ -51,17 +51,12 @@ hr { border: none; border-top: 1px solid #e2e8f0; margin: 28px 0; }
 <body>
 
 <!-- ===== 日期锁定:结算周六 9:00 前对选手隐藏 ===== -->
-<div class="unlock-overlay" id="unlockOverlay">
-  <div class="lock-emoji">🔒</div>
-  <div class="lock-title">本周报已锁定</div>
-  <div class="lock-sub">将于 <strong>8月15日（周六）9:00</strong> 自动解锁</div>
-</div>
 <script>
   var UNLOCK_TIME = new Date(2026, 7, 15, 9, 0, 0); // 8月15日(周六) 9:00
   var PREVIEW = window.location.hash.indexOf('preview') >= 0;
   function updateLock(){
     var el = document.getElementById('unlockOverlay');
-    var locked = !PREVIEW && new Date() < UNLOCK_TIME;
+    var locked = false;  // 【终局解密】不再锁定
     if (el) el.style.display = locked ? 'flex' : 'none';
   }
   updateLock();

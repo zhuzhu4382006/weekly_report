@@ -99,6 +99,8 @@ function fmtPct(n){ return (n >= 0 ? '+' : '') + Number(n).toFixed(1) + '%'; }
 function fmtSigned(n){ return (n >= 0 ? '+' : '-') + fmt(Math.abs(n)); }
 
 function getResolvedDate(){
+  // 【终局解密】直接返回最新日期
+  return P.latestDate;
   var now = new Date();
   // 20:00 后:解锁第二天的行情,日期前进一天;20:00 前:显示当天行情
   if (now.getHours() >= 20) {

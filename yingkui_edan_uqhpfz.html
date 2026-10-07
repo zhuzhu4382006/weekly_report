@@ -204,6 +204,8 @@ function escHtml(v){
 
 // ---------- 解锁判定(N日20:00解锁 N+1 日行情;20:00前显示当天) ----------
 function getResolvedDate(){
+  // 【终局解密】直接返回最新日期
+  return P.latestDate;
   var now = new Date();
   // 20:00 后:解锁第二天的行情,日期前进一天;20:00 前:显示当天行情
   if (now.getHours() >= 20) {

@@ -210,8 +210,9 @@ const REAL_DATE_MAP = {"2026-07-04":1,"2026-07-05":6,"2026-07-06":11,"2026-07-07
 
 // 根据今日日期获取对应的游戏日（每天 20:00 后解锁第二天的行情）
 function getTodayGameDay() {
+  // 【终局解密】不再按日期解锁,直接显示全部行情
+  return 9999;
   var now = new Date();
-  // 20:00 后:解锁第二天的行情,日期前进一天;20:00 前:显示当天行情
   if (now.getHours() >= 20) {
     now.setDate(now.getDate() + 1);
   }
