@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>模拟炒股 · 周报汇总</title>
+<title>模拟炒股 · 终局</title>
 <style>
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
@@ -11,22 +11,22 @@ body {
   background: #fafbfc; color: #1e293b; line-height: 1.8;
 }
 h1 { text-align: center; font-size: 26px; margin-bottom: 4px; }
-.subtitle { text-align: center; color: #64748b; font-size: 14px; margin-bottom: 36px; }
+.subtitle { text-align: center; color: #64748b; font-size: 14px; margin-bottom: 30px; }
 .card-link {
-  background: #fff; border-radius: 12px; padding: 20px 24px; margin-bottom: 16px;
+  background: #fff; border-radius: 12px; padding: 18px 22px; margin-bottom: 14px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: box-shadow 0.2s;
   display: flex; justify-content: space-between; align-items: center;
   text-decoration: none; color: inherit; border: 1px solid #e2e8f0;
 }
 .card-link:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); border-color: #2563eb; }
-.card-left { display: flex; align-items: center; gap: 14px; }
-.card-rank { font-size: 28px; }
-.card-info h2 { margin: 0; font-size: 17px; font-weight: 600; }
+.card-left { display: flex; align-items: center; gap: 13px; }
+.card-rank { font-size: 26px; }
+.card-info h2 { margin: 0; font-size: 16px; font-weight: 600; }
 .card-info p { margin: 2px 0 0; font-size: 13px; color: #64748b; }
-.card-arrow { color: #94a3b8; font-size: 20px; }
+.card-arrow { color: #94a3b8; font-size: 19px; }
 .week-tag {
   display: inline-block; font-size: 11px; padding: 1px 8px; border-radius: 4px;
-  margin-left: 8px; font-weight: 500;
+  margin-left: 8px; font-weight: 500; vertical-align: middle;
 }
 .tag-1 { background: #fef2f2; color: #dc2626; }
 .tag-2 { background: #fff7ed; color: #ea580c; }
@@ -34,47 +34,147 @@ h1 { text-align: center; font-size: 26px; margin-bottom: 4px; }
 .tag-4 { background: #f0fdf4; color: #15803d; }
 .tag-5 { background: #f5f3ff; color: #7c3aed; }
 .tag-6 { background: #ecfeff; color: #0891b2; }
-.divider { border: none; border-top: 1px solid #e2e8f0; margin: 36px 0 28px; }
+.tag-final { background: #fef3c7; color: #b45309; }
+.tag-new { background: #fee2e2; color: #b91c1c; }
+.section-title {
+  font-size: 13px; font-weight: 700; color: #64748b; letter-spacing: .08em;
+  margin: 32px 0 10px; padding-left: 2px;
+}
+.divider { border: none; border-top: 1px solid #e2e8f0; margin: 34px 0 26px; }
 .note {
   background: #f8fafc; border-radius: 10px; padding: 16px 20px;
   font-size: 13px; color: #64748b; line-height: 1.7;
 }
 .note strong { color: #1e293b; }
-
+/* ===== 终局持仓 ===== */
+.pos-card {
+  background: #fff; border-radius: 12px; padding: 18px 20px; margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;
+}
+.pos-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; text-align: center; }
+.pos-grid {
+  display: grid; grid-template-columns: 56px repeat(3, 1fr); gap: 2px;
+  font-size: 13px; max-width: 340px; margin: 0 auto;
+}
+.pos-grid .ph { font-weight: 600; color: #64748b; font-size: 11px; text-align: center; padding: 4px 0; }
+.pos-grid .pn { font-weight: 600; font-size: 13px; padding: 4px 4px; white-space: nowrap; }
+.pos-grid .pc { text-align: center; padding: 4px 0; font-size: 16px; }
+.pos-yes { color: #16a34a; font-weight: 700; }
+.pos-no { color: #cbd5e1; }
+.pos-update { font-size: 11px; color: #94a3b8; text-align: center; margin-top: 8px; }
 </style>
 </head>
 <body>
 
-<h1>📈 模拟炒股 · 周报</h1>
-<p class="subtitle">每周分析报告 · 点击查看详情</p>
+<h1>🏁 模拟炒股 · 终局</h1>
+<p class="subtitle">2026-07-04 → 2026-10-08 · 97 个现实日 · 全站已解密</p>
 
-<a class="card-link" href="kline.html?day=111" style="border-color:#bbf7d0;background:#f0fdf4;">
+<div class="pos-card" id="posCard">
+  <div class="pos-title">📌 终局持仓 <span style="font-weight:400;font-size:12px;color:#64748b;">（截至 10/8）</span></div>
+  <div id="posBody"></div>
+  <div class="pos-update">✓ 持有 &nbsp;·&nbsp; — 未持仓 &nbsp;·&nbsp; 全站已解密</div>
+</div>
+
+<div class="section-title">终局材料</div>
+
+<a class="card-link" href="终局战报.html" style="border-color:#fcd34d;background:#fffbeb;">
   <div class="card-left">
-    <div class="card-rank">📈</div>
+    <div class="card-rank">🏆</div>
     <div class="card-info">
-      <h2>当日行情 <span style="display:inline-block;font-size:11px;padding:1px 8px;border-radius:4px;margin-left:8px;font-weight:500;background:#bbf7d0;color:#15803d;">NEW</span></h2>
-      <p>三支股票当日行情 · 按游戏日解锁</p>
+      <h2>终局战报 <span class="week-tag tag-final">最终结果</span></h2>
+      <p>最终排名 · 奖金结算 · 真实股票揭晓 · 趣味数据与颁奖 · 语录墙</p>
     </div>
   </div>
   <div class="card-arrow">→</div>
 </a>
 
-<div class="card-link" id="phase6LockCard" style="border-color:#cbd5e1;background:#f8fafc;cursor:default;">
+<a class="card-link" href="行情总结.html" style="border-color:#bbf7d0;background:#f0fdf4;">
   <div class="card-left">
-    <div class="card-rank">🔒</div>
+    <div class="card-rank">📈</div>
     <div class="card-info">
-      <h2>阶段结算内容已锁定</h2>
-      <p>将在今晚 22:00 与当日材料同步解锁</p>
+      <h2>行情总结 <span class="week-tag tag-4">全程复盘</span></h2>
+      <p>三只票全程 + 八个阶段涨跌 + 关键转折日历 + 真实身份对照</p>
     </div>
   </div>
-</div>
+  <div class="card-arrow">→</div>
+</a>
 
-<a class="card-link" id="phase6Card" href="阶段报告_第六阶段.html" style="display:none;border-color:#fcd34d;background:#fffbeb;">
+<a class="card-link" href="群体行为专题.html" style="border-color:#ddd6fe;background:#f5f3ff;">
+  <div class="card-left">
+    <div class="card-rank">🌀</div>
+    <div class="card-info">
+      <h2>群体行为专题 <span class="week-tag tag-5">人在不确定面前</span></h2>
+      <p>羊群时刻 · 分歧时刻 · 观望曲线 · 跟单网络 · 与六阶段预判对照</p>
+    </div>
+  </div>
+  <div class="card-arrow">→</div>
+</a>
+
+<div class="section-title">全程数据（已解密）</div>
+
+<a class="card-link" href="kline.html">
+  <div class="card-left">
+    <div class="card-rank">🕯️</div>
+    <div class="card-info">
+      <h2>K 线行情 <span class="week-tag tag-new">买卖点已公开</span></h2>
+      <p>三支股票全程 K 线 · 所有人的买卖点现在都能看</p>
+    </div>
+  </div>
+  <div class="card-arrow">→</div>
+</a>
+
+<a class="card-link" href="阶段操作全景.html">
+  <div class="card-left">
+    <div class="card-rank">🗺️</div>
+    <div class="card-info">
+      <h2>阶段操作全景 <span class="week-tag tag-new">已解密</span></h2>
+      <p>八个阶段 · 每个人的每一次操作与当时的理由</p>
+    </div>
+  </div>
+  <div class="card-arrow">→</div>
+</a>
+
+<a class="card-link" href="hangqing.html">
+  <div class="card-left">
+    <div class="card-rank">📊</div>
+    <div class="card-info">
+      <h2>每日行情</h2>
+      <p>三支股票逐日行情 · 全期间可查</p>
+    </div>
+  </div>
+  <div class="card-arrow">→</div>
+</a>
+
+<div class="section-title">阶段报告</div>
+
+<a class="card-link" href="阶段报告_第八阶段.html" style="border-color:#cbd5e1;background:#f8fafc;">
+  <div class="card-left">
+    <div class="card-rank">🌀</div>
+    <div class="card-info">
+      <h2>第八阶段（末段） <span class="week-tag tag-6">不评奖</span></h2>
+      <p>9/29 → 10/8 · 43 天不完整阶段 · 天枢 +112.2% · 受受 +58.42%</p>
+    </div>
+  </div>
+  <div class="card-arrow">→</div>
+</a>
+
+<a class="card-link" href="阶段报告_第七阶段.html" style="border-color:#fcd34d;background:#fffbeb;">
   <div class="card-left">
     <div class="card-rank">🏆</div>
     <div class="card-info">
-      <h2>第六阶段 <span style="display:inline-block;font-size:11px;padding:1px 8px;border-radius:4px;margin-left:8px;font-weight:500;background:#fef3c7;color:#b45309;">阶段结算</span></h2>
-      <p>9/5 → 9/16 · 阶段收益率排名与奖金公布 · 天枢 +10.1% · 玉衡 -20.6%</p>
+      <h2>第七阶段 <span class="week-tag tag-final">阶段结算</span></h2>
+      <p>9/16 → 9/29 · 三票全跌 · 飞鸟三连冠 · 小玉只做 1 笔 -11.59%</p>
+    </div>
+  </div>
+  <div class="card-arrow">→</div>
+</a>
+
+<a class="card-link" href="阶段报告_第六阶段.html" style="border-color:#fcd34d;background:#fffbeb;">
+  <div class="card-left">
+    <div class="card-rank">🏆</div>
+    <div class="card-info">
+      <h2>第六阶段 <span class="week-tag tag-final">阶段结算</span></h2>
+      <p>9/5 → 9/16 · 天枢 +10.1% · 玉衡 -20.6% · 飞鸟卫冕</p>
     </div>
   </div>
   <div class="card-arrow">→</div>
@@ -84,8 +184,8 @@ h1 { text-align: center; font-size: 26px; margin-bottom: 4px; }
   <div class="card-left">
     <div class="card-rank">🏆</div>
     <div class="card-info">
-      <h2>第五阶段 <span style="display:inline-block;font-size:11px;padding:1px 8px;border-radius:4px;margin-left:8px;font-weight:500;background:#fef3c7;color:#b45309;">阶段结算</span></h2>
-      <p>8/23 → 9/5 · 阶段收益率排名与奖金公布 · 玉衡 -18.4% 累计 +177.6%</p>
+      <h2>第五阶段 <span class="week-tag tag-final">阶段结算</span></h2>
+      <p>8/23 → 9/5 · 玉衡 -18.4% 累计 +177.6%</p>
     </div>
   </div>
   <div class="card-arrow">→</div>
@@ -95,12 +195,14 @@ h1 { text-align: center; font-size: 26px; margin-bottom: 4px; }
   <div class="card-left">
     <div class="card-rank">🏆</div>
     <div class="card-info">
-      <h2>第四阶段 <span style="display:inline-block;font-size:11px;padding:1px 8px;border-radius:4px;margin-left:8px;font-weight:500;background:#fef3c7;color:#b45309;">阶段结算</span></h2>
-      <p>8/10 → 8/22 · 阶段收益率排名与奖金公布 · 玉衡 +33.3% 累计 +240.9%</p>
+      <h2>第四阶段 <span class="week-tag tag-final">阶段结算</span></h2>
+      <p>8/10 → 8/22 · 玉衡 +33.3% 累计 +240.9%</p>
     </div>
   </div>
   <div class="card-arrow">→</div>
 </a>
+
+<div class="section-title">每周报告</div>
 
 <a class="card-link" href="分析报告_第六周.html">
   <div class="card-left">
@@ -168,28 +270,84 @@ h1 { text-align: center; font-size: 26px; margin-bottom: 4px; }
   <div class="card-arrow">→</div>
 </a>
 
+<div class="section-title">个人盈亏日历</div>
+
+<a class="card-link" href="yingkui_shoushou_5jth6x.html">
+  <div class="card-left"><div class="card-rank">📅</div>
+  <div class="card-info"><h2>受受 <span class="week-tag tag-1">冠军 +107.21%</span></h2><p>逐日盈亏日历</p></div></div>
+  <div class="card-arrow">→</div>
+</a>
+
+<a class="card-link" href="yingkui_xiexie_g48e58.html">
+  <div class="card-left"><div class="card-rank">📅</div>
+  <div class="card-info"><h2>蟹蟹 <span class="week-tag tag-2">第 2 名 +14.54%</span></h2><p>逐日盈亏日历</p></div></div>
+  <div class="card-arrow">→</div>
+</a>
+
+<a class="card-link" href="yingkui_feiniao_3yvdw7.html">
+  <div class="card-left"><div class="card-rank">📅</div>
+  <div class="card-info"><h2>飞鸟 <span class="week-tag tag-3">第 3 名 +14.01%</span></h2><p>逐日盈亏日历</p></div></div>
+  <div class="card-arrow">→</div>
+</a>
+
+<a class="card-link" href="yingkui_ruomeng_ge2fwy.html">
+  <div class="card-left"><div class="card-rank">📅</div>
+  <div class="card-info"><h2>若梦 <span class="week-tag tag-4">第 4 名 -5.94%</span></h2><p>逐日盈亏日历</p></div></div>
+  <div class="card-arrow">→</div>
+</a>
+
+<a class="card-link" href="yingkui_edan_uqhpfz.html">
+  <div class="card-left"><div class="card-rank">📅</div>
+  <div class="card-info"><h2>鹅蛋 <span class="week-tag tag-5">第 5 名 -12.19%</span></h2><p>逐日盈亏日历</p></div></div>
+  <div class="card-arrow">→</div>
+</a>
+
+<a class="card-link" href="yingkui_xiaoyu_a8mz7y.html">
+  <div class="card-left"><div class="card-rank">📅</div>
+  <div class="card-info"><h2>小玉 <span class="week-tag tag-6">第 6 名 -24.54%</span></h2><p>逐日盈亏日历</p></div></div>
+  <div class="card-arrow">→</div>
+</a>
+
 <hr class="divider">
 
 <div class="note">
-  <strong>💡 说明</strong><br>
-  已结算阶段的报告仍可查看。
+  <strong>🏁 游戏已结束（2026-10-08）</strong><br>
+  全站已解密：所有人的持仓、成本、买卖点、操作理由、阶段操作全景，现在都可以查看。<br>
+  冠军 <strong>受受（+107.21%）</strong> · 总奖金 <strong>295 元</strong> · 奖杯刻字日期 2026.10.08<br>
+  <span style="color:#94a3b8;">个人投资分析报告只发本人，不在此页面公开。</span>
 </div>
 
 <script>
-// 第六阶段报告与首页摘要同在 9/16 22:00 解锁，避免提前剧透。
-function updatePhase6Card() {
-  const unlockTime = new Date(2026, 8, 16, 22, 0, 0);
-  const isPreview = window.location.hash.indexOf('preview') >= 0;
-  const open = isPreview || new Date() >= unlockTime;
-  document.getElementById('phase6LockCard').style.display = open ? 'none' : 'flex';
-  document.getElementById('phase6Card').style.display = open ? 'flex' : 'none';
+const FINAL_PRIVACY_MODE = false;  // 【终局解密】
+const POS_DATA = {
+  date: '10月8日',
+  players: [
+    { name: '受受', A: true, B: false, C: false },
+    { name: '小玉', A: false, B: true, C: true },
+    { name: '蟹蟹', A: true, B: false, C: true },
+    { name: '飞鸟', A: false, B: true, C: false },
+    { name: '鹅蛋', A: false, B: true, C: true },
+    { name: '若梦', A: false, B: false, C: false },
+  ]
+};
+const STOCK_NAMES = ['天枢能源', '玉衡材料', '摇光电子'];
+const STOCK_IDS = ['A', 'B', 'C'];
+function renderPos() {
+  const body = document.getElementById('posBody');
+  if (!body) return;
+  let html = '<div class="pos-grid">';
+  html += '<div class="ph"></div>';
+  for (const name of STOCK_NAMES) html += '<div class="ph">' + name + '</div>';
+  for (const p of POS_DATA.players) {
+    html += '<div class="pn">' + p.name + '</div>';
+    for (const sid of STOCK_IDS) {
+      html += '<div class="pc">' + (p[sid] ? '<span class="pos-yes">✓</span>' : '<span class="pos-no">—</span>') + '</div>';
+    }
+  }
+  html += '</div>';
+  body.innerHTML = html;
 }
-updatePhase6Card();
-const phase6UnlockDelay = new Date(2026, 8, 16, 22, 0, 0).getTime() - Date.now();
-if (phase6UnlockDelay > 0 && window.location.hash.indexOf('preview') < 0) {
-  setTimeout(updatePhase6Card, phase6UnlockDelay + 50);
-}
+renderPos();
 </script>
-
 </body>
 </html>
